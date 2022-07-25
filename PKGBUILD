@@ -4,7 +4,7 @@
 #               apple-ibridge drivers, respectively.
 
 pkgbase=linux-t2
-pkgver=5.18.11
+pkgver=5.18.14
 _srcname=linux-${pkgver}
 pkgrel=1
 pkgdesc='Linux kernel for T2 Macs'
@@ -58,6 +58,10 @@ source=(
   # Broadcom WIFI device support
   # https://github.com/AsahiLinux/linux/commits/bits/080-wifi
   8001-asahilinux-wifi-patchset.patch
+
+  # Broadcom BCM4377 BT device support
+  # https://github.com/AsahiLinux/linux/commits/bluetooth-wip
+  8002-asahilinux-hci_bcm4377-patchset.patch
 )
 validpgpkeys=(
   'ABAF11C65A2970B130ABE3C479BE3E4300411886'  # Linus Torvalds
@@ -95,6 +99,7 @@ prepare() {
   echo "Setting config..."
   cp ../config .config
   make olddefconfig
+   ./scripts/config --module BT_HCIBCM4377
   diff -u ../config .config || :
 
   make -s kernelrelease > version
@@ -245,10 +250,10 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('e20d8e54a782f7079b22762e8ee8adec0d08351b1083553adb2d6885ad1815af'
+sha256sums=('e17d46451133d3a3099b09e200839e875100b48403171923ab71b6a9b39856af'
             'SKIP'
-            '382aa201a6a6939210dd8668ab052724547b4bd489b38e97502bbd0848061b35'
-            'af30b8d34de6e5c120411bf66de5b6d454c02047df9743da44de66256a1033a3'
+            '6f0fd44dd87dd0ad23f782a26752bb7200d0d163e3a50df6ad3cf5cec7fe948e'
+            'dfd10bf4c928ff182fa4153e6b7358918989015f00007ea6bb3bb7ccb5e26265'
             'SKIP'
             'SKIP'
             'b7c987889d92a48d638d5258842b10f6c856e57f29ad23475aa507c7b4ad5710'
@@ -264,5 +269,6 @@ sha256sums=('e20d8e54a782f7079b22762e8ee8adec0d08351b1083553adb2d6885ad1815af'
             'b1f19084e9a9843dd8c457c55a8ea8319428428657d5363d35df64fb865a4eae'
             '92e6f4173074ac902c3fc397ea39a5ff6d5eb8645539645c0cd61b3d05ac83ca'
             '9ede98eceb69e9c93e25fdb2c567466963bdd2f81c0ecb9fb9e5107f6142ff26'
-            'f307d149ac9a48bbfd5ea678ff80457e31ae6f788ec8915f19f128d0bd966d65')
+            'f307d149ac9a48bbfd5ea678ff80457e31ae6f788ec8915f19f128d0bd966d65'
+            '8a6201bed86bf126ed9e163e2d5cdb28a8f3ade515748dcf83b44db6e4bf2380')
 # vim:set ts=8 sts=2 sw=2 et:

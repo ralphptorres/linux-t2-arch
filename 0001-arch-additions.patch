@@ -1,7 +1,7 @@
-From e7fb326c3d9e0422d01bf93ae18e0d5e4a71db4a Mon Sep 17 00:00:00 2001
+From 63cec1d1efdb31caeef17411c7560e8b0f941073 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
 Date: Mon, 16 Sep 2019 04:53:20 +0200
-Subject: [PATCH 1/3] ZEN: Add sysctl and CONFIG to disallow unprivileged
+Subject: [PATCH 1/4] ZEN: Add sysctl and CONFIG to disallow unprivileged
  CLONE_NEWUSER
 
 Our default behavior continues to match the vanilla kernel.
@@ -102,7 +102,7 @@ index 0d8abfb9e0f4a5..bd7c215e315fe4 100644
  	if (err)
  		goto bad_unshare_out;
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 830aaf8ca08ee0..af4c0806bd8e84 100644
+index c42ba2d669dcc5..a6ddbf02a80910 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -91,6 +91,9 @@
@@ -115,7 +115,7 @@ index 830aaf8ca08ee0..af4c0806bd8e84 100644
  
  #if defined(CONFIG_SYSCTL)
  
-@@ -1803,6 +1806,15 @@ static struct ctl_table kern_table[] = {
+@@ -1806,6 +1809,15 @@ static struct ctl_table kern_table[] = {
  		.mode		= 0644,
  		.proc_handler	= proc_dointvec,
  	},
@@ -150,10 +150,10 @@ index 5481ba44a8d684..423ab2563ad757 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 
-From 795e526e0e7234bbb596b4c8498bc0a258597183 Mon Sep 17 00:00:00 2001
+From 4b81eecd4c636d953aaf4ebafd8171716f4c61fe Mon Sep 17 00:00:00 2001
 From: Bryan Cain <bryancain3@gmail.com>
 Date: Thu, 5 May 2022 13:12:21 -0600
-Subject: [PATCH 2/3] HID: apple: Properly handle function keys on Keychron
+Subject: [PATCH 2/4] HID: apple: Properly handle function keys on Keychron
  keyboards
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -255,23 +255,47 @@ index 0cf35caee9fa04..42a568902f4923 100644
  }
  
 
-From 8603b1b45725531547e2f53daa5deedb1348b93f Mon Sep 17 00:00:00 2001
+From 2da21cf28e573b84e5a5baecc1eda7372322375d Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Tue, 12 Jul 2022 17:39:51 +0200
-Subject: [PATCH 3/3] Arch Linux kernel v5.18.11-arch1
+Date: Sat, 23 Jul 2022 11:14:46 +0200
+Subject: [PATCH 3/4] soundwire: Raise DEFAULT_PROBE_TIMEOUT to 10000 ms
+
+See: https://github.com/thesofproject/linux/issues/3777#issuecomment-1192655300
+---
+ drivers/soundwire/bus.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/soundwire/bus.h b/drivers/soundwire/bus.h
+index 7631ef5e71fb07..d3ed828daac0ae 100644
+--- a/drivers/soundwire/bus.h
++++ b/drivers/soundwire/bus.h
+@@ -5,7 +5,7 @@
+ #define __SDW_BUS_H
+ 
+ #define DEFAULT_BANK_SWITCH_TIMEOUT 3000
+-#define DEFAULT_PROBE_TIMEOUT       2000
++#define DEFAULT_PROBE_TIMEOUT       10000
+ 
+ u64 sdw_dmi_override_adr(struct sdw_bus *bus, u64 addr);
+ 
+
+From d69b5cf4bb5dede8e2df899152c393b670aa6cfa Mon Sep 17 00:00:00 2001
+From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
+Date: Sat, 23 Jul 2022 13:21:25 +0200
+Subject: [PATCH 4/4] Arch Linux kernel v5.18.14-arch1
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 323032d60ac34d..01df8326c443cb 100644
+index d3723b2f6d6cae..9fe0867a82a1bd 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 18
- SUBLEVEL = 11
+ SUBLEVEL = 14
 -EXTRAVERSION =
 +EXTRAVERSION = -arch1
  NAME = Superb Owl
