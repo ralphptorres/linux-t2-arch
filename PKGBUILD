@@ -6,7 +6,7 @@
 pkgbase=linux-t2
 pkgver=5.18.14
 _srcname=linux-${pkgver}
-pkgrel=1
+pkgrel=2
 pkgdesc='Linux kernel for T2 Macs'
 _srctag=v${pkgver%.*}-${pkgver##*.}
 url="https://github.com/archlinux/linux/commits/$_srctag"
@@ -99,7 +99,7 @@ prepare() {
   echo "Setting config..."
   cp ../config .config
   make olddefconfig
-   ./scripts/config --module BT_HCIBCM4377
+  ./scripts/config --module BT_HCIBCM4377
   diff -u ../config .config || :
 
   make -s kernelrelease > version
@@ -270,5 +270,5 @@ sha256sums=('e17d46451133d3a3099b09e200839e875100b48403171923ab71b6a9b39856af'
             '92e6f4173074ac902c3fc397ea39a5ff6d5eb8645539645c0cd61b3d05ac83ca'
             '9ede98eceb69e9c93e25fdb2c567466963bdd2f81c0ecb9fb9e5107f6142ff26'
             'f307d149ac9a48bbfd5ea678ff80457e31ae6f788ec8915f19f128d0bd966d65'
-            '8a6201bed86bf126ed9e163e2d5cdb28a8f3ade515748dcf83b44db6e4bf2380')
+            '20d6086c639b170c941f272a4958ad3c7fbf506d919024883f5e3e6199dcde56')
 # vim:set ts=8 sts=2 sw=2 et:
