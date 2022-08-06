@@ -1,7 +1,7 @@
-From 63cec1d1efdb31caeef17411c7560e8b0f941073 Mon Sep 17 00:00:00 2001
+From 719b85ae455ca9a78b040a19757c8f2a5acd935f Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
 Date: Mon, 16 Sep 2019 04:53:20 +0200
-Subject: [PATCH 1/4] ZEN: Add sysctl and CONFIG to disallow unprivileged
+Subject: [PATCH 1/6] ZEN: Add sysctl and CONFIG to disallow unprivileged
  CLONE_NEWUSER
 
 Our default behavior continues to match the vanilla kernel.
@@ -150,10 +150,10 @@ index 5481ba44a8d684..423ab2563ad757 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 
-From 4b81eecd4c636d953aaf4ebafd8171716f4c61fe Mon Sep 17 00:00:00 2001
+From 13e01c0a1078d2ab3bcdd3184c9f07764465ccf6 Mon Sep 17 00:00:00 2001
 From: Bryan Cain <bryancain3@gmail.com>
 Date: Thu, 5 May 2022 13:12:21 -0600
-Subject: [PATCH 2/4] HID: apple: Properly handle function keys on Keychron
+Subject: [PATCH 2/6] HID: apple: Properly handle function keys on Keychron
  keyboards
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -255,10 +255,10 @@ index 0cf35caee9fa04..42a568902f4923 100644
  }
  
 
-From 2da21cf28e573b84e5a5baecc1eda7372322375d Mon Sep 17 00:00:00 2001
+From b0019c34f1bc18dd1304301baccec56097cb52f1 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
 Date: Sat, 23 Jul 2022 11:14:46 +0200
-Subject: [PATCH 3/4] soundwire: Raise DEFAULT_PROBE_TIMEOUT to 10000 ms
+Subject: [PATCH 3/6] soundwire: Raise DEFAULT_PROBE_TIMEOUT to 10000 ms
 
 See: https://github.com/thesofproject/linux/issues/3777#issuecomment-1192655300
 ---
@@ -279,23 +279,205 @@ index 7631ef5e71fb07..d3ed828daac0ae 100644
  u64 sdw_dmi_override_adr(struct sdw_bus *bus, u64 addr);
  
 
-From d69b5cf4bb5dede8e2df899152c393b670aa6cfa Mon Sep 17 00:00:00 2001
+From 9065d5b724ca46dae626fa9439beecdd538bb716 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
+Date: Fri, 13 May 2022 17:28:10 +0300
+Subject: [PATCH 4/6] drm/i915/psr: Use full update In case of area calculation
+ fails
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Currently we have some corner cases where area calculation fails.  For
+these sel fetch area calculation ends up having update area as y1 = 0,
+y2 = 4. Instead of these values safer option is full update.
+
+One of such for example is big fb with offset. We don't have usable
+offset in psr2_sel_fetch_update. Currently it's open what is the
+proper way to fix this corner case. Use full update for now.
+
+v2: Commit message modified
+v3: Print out debug info once when area calculation fails
+v4: Use drm_info_once
+v5: pipeA -> "pipe %c", pipe_name(crtc-pipe)
+
+Cc: José Roberto de Souza <jose.souza@intel.com>
+Cc: Mika Kahola <mika.kahola@intel.com>
+Signed-off-by: Jouni Högander <jouni.hogander@intel.com>
+Reviewed-by: José Roberto de Souza <jose.souza@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_psr.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
+index 6c9e6e7f0afd05..43dc4a9bc702e0 100644
+--- a/drivers/gpu/drm/i915/display/intel_psr.c
++++ b/drivers/gpu/drm/i915/display/intel_psr.c
+@@ -1655,6 +1655,7 @@ static bool psr2_sel_fetch_pipe_state_supported(const struct intel_crtc_state *c
+ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+ 				struct intel_crtc *crtc)
+ {
++	struct drm_i915_private *dev_priv = to_i915(state->base.dev);
+ 	struct intel_crtc_state *crtc_state = intel_atomic_get_new_crtc_state(state, crtc);
+ 	struct drm_rect pipe_clip = { .x1 = 0, .y1 = -1, .x2 = INT_MAX, .y2 = -1 };
+ 	struct intel_plane_state *new_plane_state, *old_plane_state;
+@@ -1740,6 +1741,19 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+ 		clip_area_update(&pipe_clip, &damaged_area);
+ 	}
+ 
++	/*
++	 * TODO: For now we are just using full update in case
++	 * selective fetch area calculation fails. To optimize this we
++	 * should identify cases where this happens and fix the area
++	 * calculation for those.
++	 */
++	if (pipe_clip.y1 == -1) {
++		drm_info_once(&dev_priv->drm,
++			      "Selective fetch area calculation failed in pipe %c\n",
++			      pipe_name(crtc->pipe));
++		full_update = true;
++	}
++
+ 	if (full_update)
+ 		goto skip_sel_fetch_set_loop;
+ 
+
+From 8a669cbab0b916c17ed0aa6f5f6ce3313818b004 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
+Date: Fri, 13 May 2022 17:28:11 +0300
+Subject: [PATCH 5/6] drm/i915: Ensure damage clip area is within pipe area
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Current update area calculation is not handling situation where
+e.g. cursor plane is fully or partially outside pipe area.
+
+Fix this by checking damage area against pipe_src area using
+drm_rect_intersect.
+
+v2: Set x1 and x2 in damaged_area initialization
+v3: Move drm_rect_intersect into clip_area_update
+v4: draw_area -> pipe_src
+
+Closes: https://gitlab.freedesktop.org/drm/intel/-/issues/5440
+Cc: José Roberto de Souza <jose.souza@intel.com>
+Cc: Mika Kahola <mika.kahola@intel.com>
+
+Reviewed-by: José Roberto de Souza <jose.souza@intel.com>
+Signed-off-by: Jouni Högander <jouni.hogander@intel.com>
+
+Backported to 5.18.
+---
+ drivers/gpu/drm/i915/display/intel_psr.c | 23 ++++++++++++++++-------
+ 1 file changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
+index 43dc4a9bc702e0..cdc968d5c63010 100644
+--- a/drivers/gpu/drm/i915/display/intel_psr.c
++++ b/drivers/gpu/drm/i915/display/intel_psr.c
+@@ -1588,8 +1588,12 @@ static void psr2_man_trk_ctl_calc(struct intel_crtc_state *crtc_state,
+ }
+ 
+ static void clip_area_update(struct drm_rect *overlap_damage_area,
+-			     struct drm_rect *damage_area)
++			     struct drm_rect *damage_area,
++			     struct drm_rect *pipe_src)
+ {
++	if (!drm_rect_intersect(damage_area, pipe_src))
++		return;
++
+ 	if (overlap_damage_area->y1 == -1) {
+ 		overlap_damage_area->y1 = damage_area->y1;
+ 		overlap_damage_area->y2 = damage_area->y2;
+@@ -1658,6 +1662,7 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+ 	struct drm_i915_private *dev_priv = to_i915(state->base.dev);
+ 	struct intel_crtc_state *crtc_state = intel_atomic_get_new_crtc_state(state, crtc);
+ 	struct drm_rect pipe_clip = { .x1 = 0, .y1 = -1, .x2 = INT_MAX, .y2 = -1 };
++	struct drm_rect pipe_src = { .x1 = 0, .y1 = 0 };
+ 	struct intel_plane_state *new_plane_state, *old_plane_state;
+ 	struct intel_plane *plane;
+ 	bool full_update = false;
+@@ -1671,6 +1676,9 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+ 		goto skip_sel_fetch_set_loop;
+ 	}
+ 
++	pipe_src.x2 = crtc_state->pipe_src_w;
++	pipe_src.y2 = crtc_state->pipe_src_h;
++
+ 	/*
+ 	 * Calculate minimal selective fetch area of each plane and calculate
+ 	 * the pipe damaged area.
+@@ -1679,7 +1687,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+ 	 */
+ 	for_each_oldnew_intel_plane_in_state(state, plane, old_plane_state,
+ 					     new_plane_state, i) {
+-		struct drm_rect src, damaged_area = { .y1 = -1 };
++		struct drm_rect src, damaged_area = { .x1 = 0, .y1 = -1,
++						      .x2 = INT_MAX };
+ 		struct drm_atomic_helper_damage_iter iter;
+ 		struct drm_rect clip;
+ 
+@@ -1706,20 +1715,20 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+ 			if (old_plane_state->uapi.visible) {
+ 				damaged_area.y1 = old_plane_state->uapi.dst.y1;
+ 				damaged_area.y2 = old_plane_state->uapi.dst.y2;
+-				clip_area_update(&pipe_clip, &damaged_area);
++				clip_area_update(&pipe_clip, &damaged_area, &pipe_src);
+ 			}
+ 
+ 			if (new_plane_state->uapi.visible) {
+ 				damaged_area.y1 = new_plane_state->uapi.dst.y1;
+ 				damaged_area.y2 = new_plane_state->uapi.dst.y2;
+-				clip_area_update(&pipe_clip, &damaged_area);
++				clip_area_update(&pipe_clip, &damaged_area, &pipe_src);
+ 			}
+ 			continue;
+ 		} else if (new_plane_state->uapi.alpha != old_plane_state->uapi.alpha) {
+ 			/* If alpha changed mark the whole plane area as damaged */
+ 			damaged_area.y1 = new_plane_state->uapi.dst.y1;
+ 			damaged_area.y2 = new_plane_state->uapi.dst.y2;
+-			clip_area_update(&pipe_clip, &damaged_area);
++			clip_area_update(&pipe_clip, &damaged_area, &pipe_src);
+ 			continue;
+ 		}
+ 
+@@ -1730,7 +1739,7 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+ 						   &new_plane_state->uapi);
+ 		drm_atomic_for_each_plane_damage(&iter, &clip) {
+ 			if (drm_rect_intersect(&clip, &src))
+-				clip_area_update(&damaged_area, &clip);
++				clip_area_update(&damaged_area, &clip, &pipe_src);
+ 		}
+ 
+ 		if (damaged_area.y1 == -1)
+@@ -1738,7 +1747,7 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+ 
+ 		damaged_area.y1 += new_plane_state->uapi.dst.y1 - src.y1;
+ 		damaged_area.y2 += new_plane_state->uapi.dst.y1 - src.y1;
+-		clip_area_update(&pipe_clip, &damaged_area);
++		clip_area_update(&pipe_clip, &damaged_area, &pipe_src);
+ 	}
+ 
+ 	/*
+
+From 13d97fdaade94ad1e9f4853004390d4787106dd6 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Sat, 23 Jul 2022 13:21:25 +0200
-Subject: [PATCH 4/4] Arch Linux kernel v5.18.14-arch1
+Date: Wed, 3 Aug 2022 13:18:29 +0200
+Subject: [PATCH 6/6] Arch Linux kernel v5.18.16-arch1
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index d3723b2f6d6cae..9fe0867a82a1bd 100644
+index 18bcbcd037f0a3..cf3486ddfd0d30 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 18
- SUBLEVEL = 14
+ SUBLEVEL = 16
 -EXTRAVERSION =
 +EXTRAVERSION = -arch1
  NAME = Superb Owl

@@ -4,9 +4,9 @@
 #               apple-ibridge drivers, respectively.
 
 pkgbase=linux-t2
-pkgver=5.18.14
+pkgver=5.18.16
 _srcname=linux-${pkgver}
-pkgrel=3
+pkgrel=1
 pkgdesc='Linux kernel for T2 Macs'
 _srctag=v${pkgver%.*}-${pkgver##*.}
 url="https://github.com/archlinux/linux/commits/$_srctag"
@@ -36,6 +36,9 @@ source=(
 
   # Fix some acpi errors
   2001-fix-acpica-for-zero-arguments-acpi-calls.patch
+
+  # Efi fixes
+  2002-efi-Correct-Macmini-capitalisation-in-uefi-cert-quir.patch
 
   # Apple SMC ACPI support
   3001-applesmc-convert-static-structures-to-drvdata.patch
@@ -250,15 +253,16 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('e17d46451133d3a3099b09e200839e875100b48403171923ab71b6a9b39856af'
+sha256sums=('f1f586251e63de14c86e5f95b96beb15a0434f1e6e21df788d123564af0d11ce'
             'SKIP'
-            '6f0fd44dd87dd0ad23f782a26752bb7200d0d163e3a50df6ad3cf5cec7fe948e'
-            'dfd10bf4c928ff182fa4153e6b7358918989015f00007ea6bb3bb7ccb5e26265'
+            '77fdfe47d8ab448787ac9cc4b73ad6d44ded735a4a001005e39301f6ddb553b4'
+            '55520f690b18b87d4b22645934ad622db5b76d01a4a477ef08ae0ec90858f7b0'
             'SKIP'
             'SKIP'
             'b7c987889d92a48d638d5258842b10f6c856e57f29ad23475aa507c7b4ad5710'
             'a3a43feaffccbcd119f4a1b4e1299ef07ae36ef9bffc17767bf10e447fa02a2a'
             '45b911e592dd6c717e77ec4d8cbf844860bb7c29ace7a7170e7bf59c12e91bb4'
+            'e8d1789e5bc2e90007edc6908505c5bf6225d0f56dc540b949011dda2dbc00e9'
             'cfd23a06797ac86575044428a393dd7f10f06eff7648d0b78aedad82cbe41279'
             '8d8401a99a9dfbc41aa2dc5b6a409a19860b1b918465e19de4a4ff18de075ea3'
             '08d165106fe35b68a7b48f216566951a5db0baac19098c015bcc81c5fcba678d'
