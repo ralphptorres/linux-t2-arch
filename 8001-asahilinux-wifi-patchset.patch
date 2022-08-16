@@ -1040,9 +1040,9 @@ index 8b5f49997c8b5..d4aa25d646feb 100644
  	struct brcmfmac_pd_cc *country_codes;
  	const char	*board_type;
 +	const char	*antenna_sku;
+ 	unsigned char	mac[ETH_ALEN];
  	union {
  		struct brcmfmac_sdio_pd sdio;
- 	} bus;
 diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c
 index 8623bde5eb70d..05414ac0d28e9 100644
 --- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c
@@ -3650,6 +3650,7 @@ index a88c4a9310f36..15e37b109ae74 100644
  	const char	*antenna_sku;
 +	const void	*cal_blob;
 +	int		cal_size;
+ 	unsigned char	mac[ETH_ALEN];
  	union {
  		struct brcmfmac_sdio_pd sdio;
  	} bus;

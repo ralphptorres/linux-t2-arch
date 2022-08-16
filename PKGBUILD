@@ -4,7 +4,7 @@
 #               apple-ibridge drivers, respectively.
 
 pkgbase=linux-t2
-pkgver=5.18.16
+pkgver=5.19.1
 _srcname=linux-${pkgver}
 pkgrel=1
 pkgdesc='Linux kernel for T2 Macs'
@@ -119,7 +119,7 @@ _package() {
   depends=(coreutils kmod initramfs)
   optdepends=('wireless-regdb: to set the correct wireless channels of your country'
               'linux-firmware: firmware images needed for some devices')
-  provides=(VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE linux)
+  provides=(VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE KSMBD-MODULE linux)
   replaces=(virtualbox-guest-modules-arch wireguard-arch)
 
   cd $_srcname
@@ -253,16 +253,16 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('f1f586251e63de14c86e5f95b96beb15a0434f1e6e21df788d123564af0d11ce'
+sha256sums=('f4e27b926ea2c66b808db1f5706254cf92a8899e2108eedb0c3a7d12499aea55'
             'SKIP'
-            '77fdfe47d8ab448787ac9cc4b73ad6d44ded735a4a001005e39301f6ddb553b4'
-            '55520f690b18b87d4b22645934ad622db5b76d01a4a477ef08ae0ec90858f7b0'
+            'e14a79f9d4f80190d8705e1f2477be51d6ddfa4e07267d941363f031954f2b7b'
+            '30e4acbc212e05807c731731b3c73d335eb32a18287f20bfa70b6711f720a0fd'
             'SKIP'
             'SKIP'
-            'b7c987889d92a48d638d5258842b10f6c856e57f29ad23475aa507c7b4ad5710'
+            '4482f285a66a31561452c81f232ec9c4396dc95c40a37645c7c47d7bc8b26184'
             'a3a43feaffccbcd119f4a1b4e1299ef07ae36ef9bffc17767bf10e447fa02a2a'
             '45b911e592dd6c717e77ec4d8cbf844860bb7c29ace7a7170e7bf59c12e91bb4'
-            'e8d1789e5bc2e90007edc6908505c5bf6225d0f56dc540b949011dda2dbc00e9'
+            'c0807635ea60e5d8adf344ca50e39ab91322e984dda797a17efdc8ba19cc5dd5'
             'cfd23a06797ac86575044428a393dd7f10f06eff7648d0b78aedad82cbe41279'
             '8d8401a99a9dfbc41aa2dc5b6a409a19860b1b918465e19de4a4ff18de075ea3'
             '08d165106fe35b68a7b48f216566951a5db0baac19098c015bcc81c5fcba678d'
@@ -273,6 +273,6 @@ sha256sums=('f1f586251e63de14c86e5f95b96beb15a0434f1e6e21df788d123564af0d11ce'
             'b1f19084e9a9843dd8c457c55a8ea8319428428657d5363d35df64fb865a4eae'
             '92e6f4173074ac902c3fc397ea39a5ff6d5eb8645539645c0cd61b3d05ac83ca'
             '9ede98eceb69e9c93e25fdb2c567466963bdd2f81c0ecb9fb9e5107f6142ff26'
-            'f307d149ac9a48bbfd5ea678ff80457e31ae6f788ec8915f19f128d0bd966d65'
-            '6666055da3b2bb3815cde2a28c54763a6a2c585befa155ad36be97d5aeb0d1b3')
+            '8662089b720681f25068ab479da00790d4e7b168131ea6867ee8db55279c18e6'
+            '20d6086c639b170c941f272a4958ad3c7fbf506d919024883f5e3e6199dcde56')
 # vim:set ts=8 sts=2 sw=2 et:

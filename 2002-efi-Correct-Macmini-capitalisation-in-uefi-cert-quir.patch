@@ -30,6 +30,7 @@ integrity: Couldn't get UEFI dbx list
 Fixes: 155ca952c7ca ("efi: Do not import certificates from UEFI Secure Boot for T2 Macs")
 Cc: stable@vger.kernel.org
 Cc: Aditya Garg <gargaditya08@live.com>
+Tested-by: Samuel Jiang <chyishian.jiang@gmail.com>
 Signed-off-by: Orlando Chamberlain <redecorating@protonmail.com>
 ---
  security/integrity/platform_certs/load_uefi.c | 2 +-
