@@ -1,7 +1,7 @@
-From c13195971c59cf29cb399b3a0ccf667ec95b10fd Mon Sep 17 00:00:00 2001
+From 9568ee26f1752ab9705a774181edfe8fead4e731 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
 Date: Mon, 16 Sep 2019 04:53:20 +0200
-Subject: [PATCH 1/7] ZEN: Add sysctl and CONFIG to disallow unprivileged
+Subject: [PATCH 1/6] ZEN: Add sysctl and CONFIG to disallow unprivileged
  CLONE_NEWUSER
 
 Our default behavior continues to match the vanilla kernel.
@@ -150,34 +150,10 @@ index 5481ba44a8d684..423ab2563ad757 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 
-From fd3f27d2cb7ff51ec49ddc5f41ea0a0d7bf1bd85 Mon Sep 17 00:00:00 2001
-From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Sat, 23 Jul 2022 11:14:46 +0200
-Subject: [PATCH 2/7] soundwire: Raise DEFAULT_PROBE_TIMEOUT to 10000 ms
-
-See: https://github.com/thesofproject/linux/issues/3777#issuecomment-1192655300
----
- drivers/soundwire/bus.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/soundwire/bus.h b/drivers/soundwire/bus.h
-index 7631ef5e71fb07..d3ed828daac0ae 100644
---- a/drivers/soundwire/bus.h
-+++ b/drivers/soundwire/bus.h
-@@ -5,7 +5,7 @@
- #define __SDW_BUS_H
- 
- #define DEFAULT_BANK_SWITCH_TIMEOUT 3000
--#define DEFAULT_PROBE_TIMEOUT       2000
-+#define DEFAULT_PROBE_TIMEOUT       10000
- 
- u64 sdw_dmi_override_adr(struct sdw_bus *bus, u64 addr);
- 
-
-From a38762d4a787abab09f5137034dc0d1edcfa9432 Mon Sep 17 00:00:00 2001
+From f8295f9476fb6c61fff1c2f82948d085c754b0eb Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
 Date: Fri, 13 May 2022 17:28:10 +0300
-Subject: [PATCH 3/7] drm/i915/psr: Use full update In case of area calculation
+Subject: [PATCH 2/6] drm/i915/psr: Use full update In case of area calculation
  fails
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -237,10 +213,10 @@ index 06db407e2749f7..fecdaaeac39e08 100644
  		goto skip_sel_fetch_set_loop;
  
 
-From 9e3c13250fcc42961e0ce53607962c403e6de135 Mon Sep 17 00:00:00 2001
+From 98b30f1c3c2133d90100488920df2a9b134fbb9e Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
 Date: Fri, 13 May 2022 17:28:11 +0300
-Subject: [PATCH 4/7] drm/i915: Ensure damage clip area is within pipe area
+Subject: [PATCH 3/6] drm/i915: Ensure damage clip area is within pipe area
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -340,65 +316,10 @@ index fecdaaeac39e08..36356893c7caf3 100644
  
  	/*
 
-From 5d6d4f20b54f9c26b124c95a837d77a56e13dbb2 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
-Date: Fri, 13 May 2022 17:28:10 +0300
-Subject: [PATCH 5/7] drm/i915/psr: Use full update In case of area calculation
- fails
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-Currently we have some corner cases where area calculation fails.  For
-these sel fetch area calculation ends up having update area as y1 = 0,
-y2 = 4. Instead of these values safer option is full update.
-
-One of such for example is big fb with offset. We don't have usable
-offset in psr2_sel_fetch_update. Currently it's open what is the
-proper way to fix this corner case. Use full update for now.
-
-v2: Commit message modified
-v3: Print out debug info once when area calculation fails
-v4: Use drm_info_once
-v5: pipeA -> "pipe %c", pipe_name(crtc-pipe)
-
-Cc: José Roberto de Souza <jose.souza@intel.com>
-Cc: Mika Kahola <mika.kahola@intel.com>
-Signed-off-by: Jouni Högander <jouni.hogander@intel.com>
-Reviewed-by: José Roberto de Souza <jose.souza@intel.com>
----
- drivers/gpu/drm/i915/display/intel_psr.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index 36356893c7caf3..7dbe1dc75c2421 100644
---- a/drivers/gpu/drm/i915/display/intel_psr.c
-+++ b/drivers/gpu/drm/i915/display/intel_psr.c
-@@ -1793,6 +1793,19 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
- 		full_update = true;
- 	}
- 
-+	/*
-+	 * TODO: For now we are just using full update in case
-+	 * selective fetch area calculation fails. To optimize this we
-+	 * should identify cases where this happens and fix the area
-+	 * calculation for those.
-+	 */
-+	if (pipe_clip.y1 == -1) {
-+		drm_info_once(&dev_priv->drm,
-+			      "Selective fetch area calculation failed in pipe %c\n",
-+			      pipe_name(crtc->pipe));
-+		full_update = true;
-+	}
-+
- 	if (full_update)
- 		goto skip_sel_fetch_set_loop;
- 
-
-From cc28b38e0480e25f4826e457d2fed64724adf946 Mon Sep 17 00:00:00 2001
+From 74d681a2a2ac8dc78508eac51f08dfd18191f74f Mon Sep 17 00:00:00 2001
 From: Johannes Weiner <hannes@cmpxchg.org>
 Date: Tue, 2 Aug 2022 12:28:11 -0400
-Subject: [PATCH 6/7] mm: vmscan: fix extreme overreclaim and swap floods
+Subject: [PATCH 4/6] mm: vmscan: fix extreme overreclaim and swap floods
 
 During proactive reclaim, we sometimes observe severe overreclaim,
 with several thousand times more pages reclaimed than requested.
@@ -524,23 +445,103 @@ index f7d9a683e3a7d3..1cc0c666678782 100644
  	blk_finish_plug(&plug);
  	sc->nr_reclaimed += nr_reclaimed;
 
-From 28cc38fd7414b33c930a4d7123e32e1b59be75ae Mon Sep 17 00:00:00 2001
+From 928a0c25a874a13d69d58ef68fede866259b039b Mon Sep 17 00:00:00 2001
+From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+Date: Tue, 21 Jun 2022 17:56:40 -0500
+Subject: [PATCH 5/6] soundwire: intel: use pm_runtime_resume() on component
+ probe
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+During the card registration, transactions on the SoundWire bus can be
+initiated. If the ALSA card is registered after the bus suspends,
+timeouts can be seen while reading/writing codec registers. This is
+extremely easy to reproduce in driver bind/unbind tests.
+
+In an initial experiment, the ASoC soc-component.c code was modified
+to initiate a pm_runtime resume on a component probe. The results
+showed this was too invasive. Instead this patch suggests resuming the
+SoundWire component only.
+
+Because of the parent-child hierarchy enforced by the pm_runtime
+framework, it can be argued that the codec component probe should be
+enough to resume all necessary devices, and indeed the same resume
+will be applied to SoundWire codecs used on Intel platforms.
+
+Calling pm_runtime_resume() on both the Intel and codec sides has the
+benefit of resuming the bus without assuming any order during the card
+registration. The first component on a dailink to be probed will
+resume the bus. In addition, if a codec driver did not implement this
+transition, the Intel component would still resume the bus and avoid
+timeouts on card registration.
+
+BugLink: https://github.com/thesofproject/linux/issues/3651
+Reviewed-by: Rander Wang <rander.wang@intel.com>
+Reviewed-by: Ranjani Sridharan <ranjani.sridharan@linux.intel.com>
+Reviewed-by: Bard Liao <yung-chuan.liao@linux.intel.com>
+Reviewed-by: Péter Ujfalusi <peter.ujfalusi@linux.intel.com>
+Signed-off-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+Link: https://lore.kernel.org/r/20220621225641.221170-4-pierre-louis.bossart@linux.intel.com
+Signed-off-by: Vinod Koul <vkoul@kernel.org>
+---
+ drivers/soundwire/intel.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/drivers/soundwire/intel.c b/drivers/soundwire/intel.c
+index 505c5ef061e3f5..95ce292994ccb6 100644
+--- a/drivers/soundwire/intel.c
++++ b/drivers/soundwire/intel.c
+@@ -1043,6 +1043,23 @@ static int intel_trigger(struct snd_pcm_substream *substream, int cmd, struct sn
+ 	return ret;
+ }
+ 
++static int intel_component_probe(struct snd_soc_component *component)
++{
++	int ret;
++
++	/*
++	 * make sure the device is pm_runtime_active before initiating
++	 * bus transactions during the card registration.
++	 * We use pm_runtime_resume() here, without taking a reference
++	 * and releasing it immediately.
++	 */
++	ret = pm_runtime_resume(component->dev);
++	if (ret < 0 && ret != -EACCES)
++		return ret;
++
++	return 0;
++}
++
+ static int intel_component_dais_suspend(struct snd_soc_component *component)
+ {
+ 	struct snd_soc_dai *dai;
+@@ -1098,6 +1115,7 @@ static const struct snd_soc_dai_ops intel_pcm_dai_ops = {
+ 
+ static const struct snd_soc_component_driver dai_component = {
+ 	.name           = "soundwire",
++	.probe		= intel_component_probe,
+ 	.suspend	= intel_component_dais_suspend
+ };
+ 
+
+From 596797cbc2b679e1101075a833f3a6ed8121c2e9 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Thu, 11 Aug 2022 17:16:38 +0200
-Subject: [PATCH 7/7] Arch Linux kernel v5.19.1-arch1
+Date: Wed, 17 Aug 2022 15:42:51 +0200
+Subject: [PATCH 6/6] Arch Linux kernel v5.19.2-arch1
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 3acb329035eb9e..f00fca918d6044 100644
+index e2edc38ce52c13..ecc7b4683d8021 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 19
- SUBLEVEL = 1
+ SUBLEVEL = 2
 -EXTRAVERSION =
 +EXTRAVERSION = -arch1
  NAME = Superb Owl
