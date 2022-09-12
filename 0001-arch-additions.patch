@@ -1,4 +1,4 @@
-From def86e269f3edccdc1004be9f64fc7ee2f0f12d0 Mon Sep 17 00:00:00 2001
+From 365311308e94c32ce860cb1c7aeefb40e9ec91cf Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
 Date: Mon, 16 Sep 2019 04:53:20 +0200
 Subject: [PATCH 1/6] ZEN: Add sysctl and CONFIG to disallow unprivileged
@@ -14,7 +14,7 @@ Our default behavior continues to match the vanilla kernel.
  5 files changed, 53 insertions(+)
 
 diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
-index 33a4240e6a6f1..82213f9c4c17f 100644
+index 33a4240e6a6f17..82213f9c4c17fb 100644
 --- a/include/linux/user_namespace.h
 +++ b/include/linux/user_namespace.h
 @@ -139,6 +139,8 @@ static inline void set_rlimit_ucount_max(struct user_namespace *ns,
@@ -36,7 +36,7 @@ index 33a4240e6a6f1..82213f9c4c17f 100644
  {
  	return &init_user_ns;
 diff --git a/init/Kconfig b/init/Kconfig
-index c7900e8975f18..ca4e43b7f31f3 100644
+index c7900e8975f181..ca4e43b7f31f3b 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -1235,6 +1235,22 @@ config USER_NS
@@ -63,7 +63,7 @@ index c7900e8975f18..ca4e43b7f31f3 100644
  	bool "PID Namespaces"
  	default y
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 9d44f2d46c696..e5ba00a7e3b27 100644
+index 9d44f2d46c6964..e5ba00a7e3b27c 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -99,6 +99,10 @@
@@ -102,7 +102,7 @@ index 9d44f2d46c696..e5ba00a7e3b27 100644
  	if (err)
  		goto bad_unshare_out;
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 35d0342195132..8e2c7326f0e81 100644
+index 35d0342195132e..8e2c7326f0e813 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -81,6 +81,9 @@
@@ -132,7 +132,7 @@ index 35d0342195132..8e2c7326f0e81 100644
  	{
  		.procname	= "tainted",
 diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-index 5481ba44a8d68..423ab2563ad75 100644
+index 5481ba44a8d684..423ab2563ad757 100644
 --- a/kernel/user_namespace.c
 +++ b/kernel/user_namespace.c
 @@ -21,6 +21,13 @@
@@ -150,7 +150,7 @@ index 5481ba44a8d68..423ab2563ad75 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 
-From 229f9299c99ad1201c7b3586d4c80c7ba6c157b3 Mon Sep 17 00:00:00 2001
+From 51928058df4cebd8749d269a20dafa3e52122bfc Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
 Date: Fri, 13 May 2022 17:28:10 +0300
 Subject: [PATCH 2/6] drm/i915/psr: Use full update In case of area calculation
@@ -181,7 +181,7 @@ Reviewed-by: José Roberto de Souza <jose.souza@intel.com>
  1 file changed, 14 insertions(+)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index 06db407e2749f..fecdaaeac39e0 100644
+index 06db407e2749f7..fecdaaeac39e08 100644
 --- a/drivers/gpu/drm/i915/display/intel_psr.c
 +++ b/drivers/gpu/drm/i915/display/intel_psr.c
 @@ -1685,6 +1685,7 @@ static bool psr2_sel_fetch_pipe_state_supported(const struct intel_crtc_state *c
@@ -213,7 +213,7 @@ index 06db407e2749f..fecdaaeac39e0 100644
  		goto skip_sel_fetch_set_loop;
  
 
-From 92d772d7269af7f39562c9350f8c88d493b6b17e Mon Sep 17 00:00:00 2001
+From 568322864d985b26cb125c26940e6512183eb517 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
 Date: Fri, 13 May 2022 17:28:11 +0300
 Subject: [PATCH 3/6] drm/i915: Ensure damage clip area is within pipe area
@@ -242,7 +242,7 @@ Signed-off-by: Jouni Högander <jouni.hogander@intel.com>
  1 file changed, 16 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index fecdaaeac39e0..36356893c7caf 100644
+index fecdaaeac39e08..36356893c7caf3 100644
 --- a/drivers/gpu/drm/i915/display/intel_psr.c
 +++ b/drivers/gpu/drm/i915/display/intel_psr.c
 @@ -1618,8 +1618,12 @@ static void psr2_man_trk_ctl_calc(struct intel_crtc_state *crtc_state,
@@ -316,7 +316,7 @@ index fecdaaeac39e0..36356893c7caf 100644
  
  	/*
 
-From 94e150170f4db2042f35ba74bf1fa63322f0100a Mon Sep 17 00:00:00 2001
+From 157e5550caea8a8389e57c68de443a1babd015c3 Mon Sep 17 00:00:00 2001
 From: Johannes Weiner <hannes@cmpxchg.org>
 Date: Tue, 2 Aug 2022 12:28:11 -0400
 Subject: [PATCH 4/6] mm: vmscan: fix extreme overreclaim and swap floods
@@ -402,7 +402,7 @@ Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
  1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/mm/vmscan.c b/mm/vmscan.c
-index f7d9a683e3a7d..1cc0c66667878 100644
+index f7d9a683e3a7d3..1cc0c666678782 100644
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
 @@ -2897,8 +2897,8 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
@@ -445,7 +445,7 @@ index f7d9a683e3a7d..1cc0c66667878 100644
  	blk_finish_plug(&plug);
  	sc->nr_reclaimed += nr_reclaimed;
 
-From 025353ab40d53ab61e4c378582cfbdfd7f684f99 Mon Sep 17 00:00:00 2001
+From 82b1098e107303aefec21455a84c0e8120ea42e3 Mon Sep 17 00:00:00 2001
 From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 Date: Tue, 21 Jun 2022 17:56:40 -0500
 Subject: [PATCH 5/6] soundwire: intel: use pm_runtime_resume() on component
@@ -489,7 +489,7 @@ Signed-off-by: Vinod Koul <vkoul@kernel.org>
  1 file changed, 18 insertions(+)
 
 diff --git a/drivers/soundwire/intel.c b/drivers/soundwire/intel.c
-index 505c5ef061e3f..95ce292994ccb 100644
+index 505c5ef061e3f5..95ce292994ccb6 100644
 --- a/drivers/soundwire/intel.c
 +++ b/drivers/soundwire/intel.c
 @@ -1043,6 +1043,23 @@ static int intel_trigger(struct snd_pcm_substream *substream, int cmd, struct sn
@@ -525,23 +525,23 @@ index 505c5ef061e3f..95ce292994ccb 100644
  };
  
 
-From ad939d199f01be832c9384d6d4838012e9c98dfc Mon Sep 17 00:00:00 2001
+From 3c2c6817c7e90d6d98b7dbcaa446b917219ee6c3 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Thu, 1 Sep 2022 00:07:20 +0200
-Subject: [PATCH 6/6] Arch Linux kernel v5.19.6-arch1
+Date: Mon, 5 Sep 2022 20:05:59 +0200
+Subject: [PATCH 6/6] Arch Linux kernel v5.19.7-arch1
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index cb68101ea070a..0944ddd7558d8 100644
+index 3d88923df694ea..dde60a75007591 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 19
- SUBLEVEL = 6
+ SUBLEVEL = 7
 -EXTRAVERSION =
 +EXTRAVERSION = -arch1
  NAME = Superb Owl
