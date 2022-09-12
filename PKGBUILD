@@ -67,6 +67,10 @@ source=(
   # Broadcom BCM4377 BT device support
   # https://github.com/AsahiLinux/linux/commits/bluetooth-wip
   8002-asahilinux-hci_bcm4377-patchset.patch
+
+  # Keyboard Layout fixes
+  9001-HID-apple-fix-key-translations-where-multiple-quirks.patch
+  9002-HID-apple-enable-APPLE_ISO_TILDE_QUIRK-for-the-keybo.patch
 )
 validpgpkeys=(
   'ABAF11C65A2970B130ABE3C479BE3E4300411886'  # Linus Torvalds
@@ -277,5 +281,7 @@ sha256sums=('41a4f824af614460c429a7c723e8dcbb0e042f0047d328c18b4ed6f2b4efa63a'
             'b1f19084e9a9843dd8c457c55a8ea8319428428657d5363d35df64fb865a4eae'
             '9ede98eceb69e9c93e25fdb2c567466963bdd2f81c0ecb9fb9e5107f6142ff26'
             '8662089b720681f25068ab479da00790d4e7b168131ea6867ee8db55279c18e6'
-            '20d6086c639b170c941f272a4958ad3c7fbf506d919024883f5e3e6199dcde56')
+            '20d6086c639b170c941f272a4958ad3c7fbf506d919024883f5e3e6199dcde56'
+            '7e800fe3ca2805cc7f79f081ddc3baaba3805e94ed06ddba3f6e342eb216941b'
+            'f8f9fe683b5e36f01bdafa4f4253200e2df8a804f3ccd66eb2e1ada0f85165d3')
 # vim:set ts=8 sts=2 sw=2 et:
