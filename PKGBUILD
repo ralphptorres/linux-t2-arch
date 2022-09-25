@@ -6,7 +6,7 @@
 pkgbase=linux-t2
 pkgver=5.19.10
 _srcname=linux-${pkgver}
-pkgrel=1
+pkgrel=2
 pkgdesc='Linux kernel for T2 Macs'
 _srctag=v${pkgver%.*}-${pkgver##*.}
 url="https://github.com/archlinux/linux/commits/$_srctag"
@@ -43,7 +43,7 @@ source=(
   # Misc BCE patches
   2011-change-many-info-logs-to-debug.patch
   2012-vhci-drop_endpoint-check-for-null-vdev.patch
-
+  2013-aaudio-set-the-card-driver-name-to-AppleT2x-channel-.patch
 
   # Apple SMC ACPI support
   3001-applesmc-convert-static-structures-to-drvdata.patch
@@ -271,6 +271,7 @@ sha256sums=('67dab932e85f9b9062ced666c8ea888230a1dadfd624b05aead6b6ebc6d3bdd5'
             'c0807635ea60e5d8adf344ca50e39ab91322e984dda797a17efdc8ba19cc5dd5'
             '32d3915b4d50cfc654dda53e65e633d1e99b6c98795cbb7416f1ae8fe1ea2321'
             'b5959f15fb744a1c4ab02bb01b49ef214d2f56cb350dadee241a31a01765612c'
+            '515756555e7a6178f38c82bb1dbc2919aa9660ee8b9e158f3764948578dee92c'
             'cfd23a06797ac86575044428a393dd7f10f06eff7648d0b78aedad82cbe41279'
             '8d8401a99a9dfbc41aa2dc5b6a409a19860b1b918465e19de4a4ff18de075ea3'
             '08d165106fe35b68a7b48f216566951a5db0baac19098c015bcc81c5fcba678d'
