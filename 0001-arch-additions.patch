@@ -1,7 +1,7 @@
-From 0d6df8eead786b546b58790641446b24ef8f83ee Mon Sep 17 00:00:00 2001
+From c885e42eb7f904c672d18899586f1d6498fbf16e Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
 Date: Mon, 16 Sep 2019 04:53:20 +0200
-Subject: [PATCH 1/8] ZEN: Add sysctl and CONFIG to disallow unprivileged
+Subject: [PATCH 1/9] ZEN: Add sysctl and CONFIG to disallow unprivileged
  CLONE_NEWUSER
 
 Our default behavior continues to match the vanilla kernel.
@@ -150,10 +150,10 @@ index 5481ba44a8d684..423ab2563ad757 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 
-From 1788d4888382fecb43fd14892a613e47144e534d Mon Sep 17 00:00:00 2001
+From f741527431e0510b876d68c7e7ec4286cbd41a24 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
 Date: Fri, 13 May 2022 17:28:10 +0300
-Subject: [PATCH 2/8] drm/i915/psr: Use full update In case of area calculation
+Subject: [PATCH 2/9] drm/i915/psr: Use full update In case of area calculation
  fails
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -181,10 +181,10 @@ Reviewed-by: José Roberto de Souza <jose.souza@intel.com>
  1 file changed, 14 insertions(+)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index 06db407e2749f7..fecdaaeac39e08 100644
+index 8f09203e0cf03f..a0571c7249f142 100644
 --- a/drivers/gpu/drm/i915/display/intel_psr.c
 +++ b/drivers/gpu/drm/i915/display/intel_psr.c
-@@ -1685,6 +1685,7 @@ static bool psr2_sel_fetch_pipe_state_supported(const struct intel_crtc_state *c
+@@ -1691,6 +1691,7 @@ static bool psr2_sel_fetch_pipe_state_supported(const struct intel_crtc_state *c
  int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  				struct intel_crtc *crtc)
  {
@@ -192,7 +192,7 @@ index 06db407e2749f7..fecdaaeac39e08 100644
  	struct intel_crtc_state *crtc_state = intel_atomic_get_new_crtc_state(state, crtc);
  	struct drm_rect pipe_clip = { .x1 = 0, .y1 = -1, .x2 = INT_MAX, .y2 = -1 };
  	struct intel_plane_state *new_plane_state, *old_plane_state;
-@@ -1770,6 +1771,19 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+@@ -1776,6 +1777,19 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  		clip_area_update(&pipe_clip, &damaged_area);
  	}
  
@@ -213,10 +213,10 @@ index 06db407e2749f7..fecdaaeac39e08 100644
  		goto skip_sel_fetch_set_loop;
  
 
-From 333f53bd4ba9fade8bf15353aa11606e2a6afd7e Mon Sep 17 00:00:00 2001
+From 05a080996060663c466061d348af4c67801c87d1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
 Date: Fri, 13 May 2022 17:28:11 +0300
-Subject: [PATCH 3/8] drm/i915: Ensure damage clip area is within pipe area
+Subject: [PATCH 3/9] drm/i915: Ensure damage clip area is within pipe area
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -242,10 +242,10 @@ Signed-off-by: Jouni Högander <jouni.hogander@intel.com>
  1 file changed, 16 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index fecdaaeac39e08..36356893c7caf3 100644
+index a0571c7249f142..7d61c55184e51f 100644
 --- a/drivers/gpu/drm/i915/display/intel_psr.c
 +++ b/drivers/gpu/drm/i915/display/intel_psr.c
-@@ -1618,8 +1618,12 @@ static void psr2_man_trk_ctl_calc(struct intel_crtc_state *crtc_state,
+@@ -1624,8 +1624,12 @@ static void psr2_man_trk_ctl_calc(struct intel_crtc_state *crtc_state,
  }
  
  static void clip_area_update(struct drm_rect *overlap_damage_area,
@@ -259,7 +259,7 @@ index fecdaaeac39e08..36356893c7caf3 100644
  	if (overlap_damage_area->y1 == -1) {
  		overlap_damage_area->y1 = damage_area->y1;
  		overlap_damage_area->y2 = damage_area->y2;
-@@ -1709,7 +1713,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+@@ -1715,7 +1719,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  	 */
  	for_each_oldnew_intel_plane_in_state(state, plane, old_plane_state,
  					     new_plane_state, i) {
@@ -269,7 +269,7 @@ index fecdaaeac39e08..36356893c7caf3 100644
  		struct drm_atomic_helper_damage_iter iter;
  		struct drm_rect clip;
  
-@@ -1736,20 +1741,23 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+@@ -1742,20 +1747,23 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  			if (old_plane_state->uapi.visible) {
  				damaged_area.y1 = old_plane_state->uapi.dst.y1;
  				damaged_area.y2 = old_plane_state->uapi.dst.y2;
@@ -296,7 +296,7 @@ index fecdaaeac39e08..36356893c7caf3 100644
  			continue;
  		}
  
-@@ -1760,7 +1768,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+@@ -1766,7 +1774,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  						   &new_plane_state->uapi);
  		drm_atomic_for_each_plane_damage(&iter, &clip) {
  			if (drm_rect_intersect(&clip, &src))
@@ -306,7 +306,7 @@ index fecdaaeac39e08..36356893c7caf3 100644
  		}
  
  		if (damaged_area.y1 == -1)
-@@ -1768,7 +1777,7 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+@@ -1774,7 +1783,7 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  
  		damaged_area.y1 += new_plane_state->uapi.dst.y1 - src.y1;
  		damaged_area.y2 += new_plane_state->uapi.dst.y1 - src.y1;
@@ -316,10 +316,10 @@ index fecdaaeac39e08..36356893c7caf3 100644
  
  	/*
 
-From fa7daa6069c323ea75d85e0e1c33eecd148a4ea8 Mon Sep 17 00:00:00 2001
+From 9d77d1241d349911ea8cd269a1d1df9cc9c61644 Mon Sep 17 00:00:00 2001
 From: Johannes Weiner <hannes@cmpxchg.org>
 Date: Tue, 2 Aug 2022 12:28:11 -0400
-Subject: [PATCH 4/8] mm: vmscan: fix extreme overreclaim and swap floods
+Subject: [PATCH 4/9] mm: vmscan: fix extreme overreclaim and swap floods
 
 During proactive reclaim, we sometimes observe severe overreclaim,
 with several thousand times more pages reclaimed than requested.
@@ -445,10 +445,10 @@ index f7d9a683e3a7d3..1cc0c666678782 100644
  	blk_finish_plug(&plug);
  	sc->nr_reclaimed += nr_reclaimed;
 
-From 56ac73b5cb940f5cb787f61dc8819232489d1b68 Mon Sep 17 00:00:00 2001
+From 3d9b4e7b1383020f9b0c586017adbd9c3e0461ff Mon Sep 17 00:00:00 2001
 From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 Date: Tue, 21 Jun 2022 17:56:40 -0500
-Subject: [PATCH 5/8] soundwire: intel: use pm_runtime_resume() on component
+Subject: [PATCH 5/9] soundwire: intel: use pm_runtime_resume() on component
  probe
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -525,10 +525,10 @@ index 505c5ef061e3f5..95ce292994ccb6 100644
  };
  
 
-From 47f7ee8a2fcd1f18956b456de5ed96723ded8066 Mon Sep 17 00:00:00 2001
+From f6cb7590fb92964a67da2d92920849f34d646326 Mon Sep 17 00:00:00 2001
 From: Desmond Cheong Zhi Xi <desmondcheongzx@gmail.com>
 Date: Mon, 4 Oct 2021 14:07:34 -0400
-Subject: [PATCH 6/8] Bluetooth: fix deadlock for RFCOMM sk state change
+Subject: [PATCH 6/9] Bluetooth: fix deadlock for RFCOMM sk state change
 
 Syzbot reports the following task hang [1]:
 
@@ -754,10 +754,10 @@ index 4bf4ea6cbb5eee..4850dafbaa05fb 100644
  
  /* ---- Socket functions ---- */
 
-From 6cce0cadda6ee5aebec4e097fdd03c028aedef83 Mon Sep 17 00:00:00 2001
+From 6baaafff07d5e0ddc546c97518d70b6533094513 Mon Sep 17 00:00:00 2001
 From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 Date: Tue, 13 Sep 2022 10:10:36 +0200
-Subject: [PATCH 7/8] ASoC: Intel: sof_sdw: add support for Dell SKU 0AFF
+Subject: [PATCH 7/9] ASoC: Intel: sof_sdw: add support for Dell SKU 0AFF
 
 Yet another SKU that needs a quirk for jack detection and four-speaker
 support.
@@ -790,23 +790,98 @@ index ad826ad82d51a7..cfeef8994be311 100644
  		.callback = sof_sdw_quirk_cb,
  		.matches = {
 
-From 332a0fcc76f2dc65d043d6f131f84d1b26ba17d1 Mon Sep 17 00:00:00 2001
+From 3003a9e309999c6417f2927fa3689ee8e45c9be2 Mon Sep 17 00:00:00 2001
+From: Dave Hansen <dave.hansen@intel.com>
+Date: Thu, 22 Sep 2022 11:47:45 -0700
+Subject: [PATCH 8/9] ACPI: processor idle: Practically limit "Dummy wait"
+ workaround to old Intel systems
+
+Old, circa 2002 chipsets have a bug: they don't go idle when they are
+supposed to.  So, a workaround was added to slow the CPU down and
+ensure that the CPU waits a bit for the chipset to actually go idle.
+This workaround is ancient and has been in place in some form since
+the original kernel ACPI implementation.
+
+But, this workaround is very painful on modern systems.  The "inl()"
+can take thousands of cycles (see Link: for some more detailed
+numbers and some fun kernel archaeology).
+
+First and foremost, modern systems should not be using this code.
+Typical Intel systems have not used it in over a decade because it is
+horribly inferior to MWAIT-based idle.
+
+Despite this, people do seem to be tripping over this workaround on
+AMD system today.
+
+Limit the "dummy wait" workaround to Intel systems.  Keep Modern AMD
+systems from tripping over the workaround.  Remotely modern Intel
+systems use intel_idle instead of this code and will, in practice,
+remain unaffected by the dummy wait.
+
+Reported-by: K Prateek Nayak <kprateek.nayak@amd.com>
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
+Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
+Tested-by: K Prateek Nayak <kprateek.nayak@amd.com>
+Link: https://lore.kernel.org/all/20220921063638.2489-1-kprateek.nayak@amd.com/
+Link: https://lkml.kernel.org/r/20220922184745.3252932-1-dave.hansen@intel.com
+---
+ drivers/acpi/processor_idle.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 13200969ccf35c..5168b6624b4296 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -530,10 +530,27 @@ static void wait_for_freeze(void)
+ 	/* No delay is needed if we are in guest */
+ 	if (boot_cpu_has(X86_FEATURE_HYPERVISOR))
+ 		return;
++	/*
++	 * Modern (>=Nehalem) Intel systems use ACPI via intel_idle,
++	 * not this code.  Assume that any Intel systems using this
++	 * are ancient and may need the dummy wait.  This also assumes
++	 * that the motivating chipset issue was Intel-only.
++	 */
++	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
++		return;
+ #endif
+-	/* Dummy wait op - must do something useless after P_LVL2 read
+-	   because chipsets cannot guarantee that STPCLK# signal
+-	   gets asserted in time to freeze execution properly. */
++	/*
++	 * Dummy wait op - must do something useless after P_LVL2 read
++	 * because chipsets cannot guarantee that STPCLK# signal gets
++	 * asserted in time to freeze execution properly
++	 *
++	 * This workaround has been in place since the original ACPI
++	 * implementation was merged, circa 2002.
++	 *
++	 * If a profile is pointing to this instruction, please first
++	 * consider moving your system to a more modern idle
++	 * mechanism.
++	 */
+ 	inl(acpi_gbl_FADT.xpm_timer_block.address);
+ }
+ 
+
+From c0d9ae5f5899852259200bf6540d8912ca137bf1 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Tue, 20 Sep 2022 17:16:39 +0200
-Subject: [PATCH 8/8] Arch Linux kernel v5.19.10-arch1
+Date: Wed, 28 Sep 2022 15:20:08 +0200
+Subject: [PATCH 9/9] Arch Linux kernel v5.19.12-arch1
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 33a9b6b547c472..6bd9023b6a30ac 100644
+index 7df4c195c8ab23..82b95fde53905d 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 19
- SUBLEVEL = 10
+ SUBLEVEL = 12
 -EXTRAVERSION =
 +EXTRAVERSION = -arch1
  NAME = Superb Owl
