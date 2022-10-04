@@ -1,4 +1,4 @@
-From c885e42eb7f904c672d18899586f1d6498fbf16e Mon Sep 17 00:00:00 2001
+From d81fd9ec79d87a1f3d5b66031fb72a174ac21436 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
 Date: Mon, 16 Sep 2019 04:53:20 +0200
 Subject: [PATCH 1/9] ZEN: Add sysctl and CONFIG to disallow unprivileged
@@ -150,7 +150,7 @@ index 5481ba44a8d684..423ab2563ad757 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 
-From f741527431e0510b876d68c7e7ec4286cbd41a24 Mon Sep 17 00:00:00 2001
+From cf4e514f19a13675fce5a6e7aa76e98601279b01 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
 Date: Fri, 13 May 2022 17:28:10 +0300
 Subject: [PATCH 2/9] drm/i915/psr: Use full update In case of area calculation
@@ -181,10 +181,10 @@ Reviewed-by: José Roberto de Souza <jose.souza@intel.com>
  1 file changed, 14 insertions(+)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index 8f09203e0cf03f..a0571c7249f142 100644
+index 06db407e2749f7..fecdaaeac39e08 100644
 --- a/drivers/gpu/drm/i915/display/intel_psr.c
 +++ b/drivers/gpu/drm/i915/display/intel_psr.c
-@@ -1691,6 +1691,7 @@ static bool psr2_sel_fetch_pipe_state_supported(const struct intel_crtc_state *c
+@@ -1685,6 +1685,7 @@ static bool psr2_sel_fetch_pipe_state_supported(const struct intel_crtc_state *c
  int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  				struct intel_crtc *crtc)
  {
@@ -192,7 +192,7 @@ index 8f09203e0cf03f..a0571c7249f142 100644
  	struct intel_crtc_state *crtc_state = intel_atomic_get_new_crtc_state(state, crtc);
  	struct drm_rect pipe_clip = { .x1 = 0, .y1 = -1, .x2 = INT_MAX, .y2 = -1 };
  	struct intel_plane_state *new_plane_state, *old_plane_state;
-@@ -1776,6 +1777,19 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+@@ -1770,6 +1771,19 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  		clip_area_update(&pipe_clip, &damaged_area);
  	}
  
@@ -213,7 +213,7 @@ index 8f09203e0cf03f..a0571c7249f142 100644
  		goto skip_sel_fetch_set_loop;
  
 
-From 05a080996060663c466061d348af4c67801c87d1 Mon Sep 17 00:00:00 2001
+From 5f2ca4f3f48e484f7b04255f0779cbaffd9ef7fc Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
 Date: Fri, 13 May 2022 17:28:11 +0300
 Subject: [PATCH 3/9] drm/i915: Ensure damage clip area is within pipe area
@@ -242,10 +242,10 @@ Signed-off-by: Jouni Högander <jouni.hogander@intel.com>
  1 file changed, 16 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index a0571c7249f142..7d61c55184e51f 100644
+index fecdaaeac39e08..36356893c7caf3 100644
 --- a/drivers/gpu/drm/i915/display/intel_psr.c
 +++ b/drivers/gpu/drm/i915/display/intel_psr.c
-@@ -1624,8 +1624,12 @@ static void psr2_man_trk_ctl_calc(struct intel_crtc_state *crtc_state,
+@@ -1618,8 +1618,12 @@ static void psr2_man_trk_ctl_calc(struct intel_crtc_state *crtc_state,
  }
  
  static void clip_area_update(struct drm_rect *overlap_damage_area,
@@ -259,7 +259,7 @@ index a0571c7249f142..7d61c55184e51f 100644
  	if (overlap_damage_area->y1 == -1) {
  		overlap_damage_area->y1 = damage_area->y1;
  		overlap_damage_area->y2 = damage_area->y2;
-@@ -1715,7 +1719,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+@@ -1709,7 +1713,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  	 */
  	for_each_oldnew_intel_plane_in_state(state, plane, old_plane_state,
  					     new_plane_state, i) {
@@ -269,7 +269,7 @@ index a0571c7249f142..7d61c55184e51f 100644
  		struct drm_atomic_helper_damage_iter iter;
  		struct drm_rect clip;
  
-@@ -1742,20 +1747,23 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+@@ -1736,20 +1741,23 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  			if (old_plane_state->uapi.visible) {
  				damaged_area.y1 = old_plane_state->uapi.dst.y1;
  				damaged_area.y2 = old_plane_state->uapi.dst.y2;
@@ -296,7 +296,7 @@ index a0571c7249f142..7d61c55184e51f 100644
  			continue;
  		}
  
-@@ -1766,7 +1774,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+@@ -1760,7 +1768,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  						   &new_plane_state->uapi);
  		drm_atomic_for_each_plane_damage(&iter, &clip) {
  			if (drm_rect_intersect(&clip, &src))
@@ -306,7 +306,7 @@ index a0571c7249f142..7d61c55184e51f 100644
  		}
  
  		if (damaged_area.y1 == -1)
-@@ -1774,7 +1783,7 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
+@@ -1768,7 +1777,7 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
  
  		damaged_area.y1 += new_plane_state->uapi.dst.y1 - src.y1;
  		damaged_area.y2 += new_plane_state->uapi.dst.y1 - src.y1;
@@ -316,7 +316,7 @@ index a0571c7249f142..7d61c55184e51f 100644
  
  	/*
 
-From 9d77d1241d349911ea8cd269a1d1df9cc9c61644 Mon Sep 17 00:00:00 2001
+From a3fba37df44ac9fd315265621d43f7ecf46189b3 Mon Sep 17 00:00:00 2001
 From: Johannes Weiner <hannes@cmpxchg.org>
 Date: Tue, 2 Aug 2022 12:28:11 -0400
 Subject: [PATCH 4/9] mm: vmscan: fix extreme overreclaim and swap floods
@@ -445,7 +445,7 @@ index f7d9a683e3a7d3..1cc0c666678782 100644
  	blk_finish_plug(&plug);
  	sc->nr_reclaimed += nr_reclaimed;
 
-From 3d9b4e7b1383020f9b0c586017adbd9c3e0461ff Mon Sep 17 00:00:00 2001
+From 9a64bba0697976a2d72a1b54af712958a6839daf Mon Sep 17 00:00:00 2001
 From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 Date: Tue, 21 Jun 2022 17:56:40 -0500
 Subject: [PATCH 5/9] soundwire: intel: use pm_runtime_resume() on component
@@ -525,7 +525,7 @@ index 505c5ef061e3f5..95ce292994ccb6 100644
  };
  
 
-From f6cb7590fb92964a67da2d92920849f34d646326 Mon Sep 17 00:00:00 2001
+From c729722b88b401adcc85ffb6089a38262b9bc074 Mon Sep 17 00:00:00 2001
 From: Desmond Cheong Zhi Xi <desmondcheongzx@gmail.com>
 Date: Mon, 4 Oct 2021 14:07:34 -0400
 Subject: [PATCH 6/9] Bluetooth: fix deadlock for RFCOMM sk state change
@@ -754,7 +754,7 @@ index 4bf4ea6cbb5eee..4850dafbaa05fb 100644
  
  /* ---- Socket functions ---- */
 
-From 6baaafff07d5e0ddc546c97518d70b6533094513 Mon Sep 17 00:00:00 2001
+From 22a81ed2eca2d286584527f452e7d5374116e24a Mon Sep 17 00:00:00 2001
 From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 Date: Tue, 13 Sep 2022 10:10:36 +0200
 Subject: [PATCH 7/9] ASoC: Intel: sof_sdw: add support for Dell SKU 0AFF
@@ -790,7 +790,7 @@ index ad826ad82d51a7..cfeef8994be311 100644
  		.callback = sof_sdw_quirk_cb,
  		.matches = {
 
-From 3003a9e309999c6417f2927fa3689ee8e45c9be2 Mon Sep 17 00:00:00 2001
+From b9ae2f2a2f2a4b93b1f409b3d3e8aa051f2a6e24 Mon Sep 17 00:00:00 2001
 From: Dave Hansen <dave.hansen@intel.com>
 Date: Thu, 22 Sep 2022 11:47:45 -0700
 Subject: [PATCH 8/9] ACPI: processor idle: Practically limit "Dummy wait"
@@ -865,23 +865,23 @@ index 13200969ccf35c..5168b6624b4296 100644
  }
  
 
-From c0d9ae5f5899852259200bf6540d8912ca137bf1 Mon Sep 17 00:00:00 2001
+From 1453e1676baca2d9631977c3ddebb7c4985b05d8 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Wed, 28 Sep 2022 15:20:08 +0200
-Subject: [PATCH 9/9] Arch Linux kernel v5.19.12-arch1
+Date: Tue, 4 Oct 2022 16:35:29 +0200
+Subject: [PATCH 9/9] Arch Linux kernel v5.19.13-arch1
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 7df4c195c8ab23..82b95fde53905d 100644
+index 2ecedf786e2733..2db033f1d56107 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 19
- SUBLEVEL = 12
+ SUBLEVEL = 13
 -EXTRAVERSION =
 +EXTRAVERSION = -arch1
  NAME = Superb Owl
