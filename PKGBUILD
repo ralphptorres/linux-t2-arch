@@ -37,9 +37,6 @@ source=(
   # Fix some acpi errors
   2001-fix-acpica-for-zero-arguments-acpi-calls.patch
 
-  # Efi fixes
-  2002-efi-Correct-Macmini-capitalisation-in-uefi-cert-quir.patch
-
   # Misc BCE patches
   2011-change-many-info-logs-to-debug.patch
   2012-vhci-drop_endpoint-check-for-null-vdev.patch
@@ -268,7 +265,6 @@ sha256sums=('4ecdb8b59c6f6f258d89cbf22eede210e0a55c09db884988fe706efe2fe8f148'
             '4482f285a66a31561452c81f232ec9c4396dc95c40a37645c7c47d7bc8b26184'
             'a3a43feaffccbcd119f4a1b4e1299ef07ae36ef9bffc17767bf10e447fa02a2a'
             '45b911e592dd6c717e77ec4d8cbf844860bb7c29ace7a7170e7bf59c12e91bb4'
-            'c0807635ea60e5d8adf344ca50e39ab91322e984dda797a17efdc8ba19cc5dd5'
             '32d3915b4d50cfc654dda53e65e633d1e99b6c98795cbb7416f1ae8fe1ea2321'
             'b5959f15fb744a1c4ab02bb01b49ef214d2f56cb350dadee241a31a01765612c'
             '515756555e7a6178f38c82bb1dbc2919aa9660ee8b9e158f3764948578dee92c'
