@@ -1,7 +1,7 @@
-From d81fd9ec79d87a1f3d5b66031fb72a174ac21436 Mon Sep 17 00:00:00 2001
+From b5ac0998149a1f64664c8869829f200cfb2ce2a5 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
 Date: Mon, 16 Sep 2019 04:53:20 +0200
-Subject: [PATCH 1/9] ZEN: Add sysctl and CONFIG to disallow unprivileged
+Subject: [PATCH 1/4] ZEN: Add sysctl and CONFIG to disallow unprivileged
  CLONE_NEWUSER
 
 Our default behavior continues to match the vanilla kernel.
@@ -36,10 +36,10 @@ index 33a4240e6a6f17..82213f9c4c17fb 100644
  {
  	return &init_user_ns;
 diff --git a/init/Kconfig b/init/Kconfig
-index c7900e8975f181..ca4e43b7f31f3b 100644
+index 532362fcfe31fd..f13bb9f371a2c6 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
-@@ -1235,6 +1235,22 @@ config USER_NS
+@@ -1241,6 +1241,22 @@ config USER_NS
  
  	  If unsure, say N.
  
@@ -63,7 +63,7 @@ index c7900e8975f181..ca4e43b7f31f3b 100644
  	bool "PID Namespaces"
  	default y
 diff --git a/kernel/fork.c b/kernel/fork.c
-index d587c85f35b1ee..3d8e44ef18e51f 100644
+index 2b6bd511c6ed1c..704fe6bc9cb4df 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -99,6 +99,10 @@
@@ -77,7 +77,7 @@ index d587c85f35b1ee..3d8e44ef18e51f 100644
  #include <asm/pgalloc.h>
  #include <linux/uaccess.h>
  #include <asm/mmu_context.h>
-@@ -1996,6 +2000,10 @@ static __latent_entropy struct task_struct *copy_process(
+@@ -2009,6 +2013,10 @@ static __latent_entropy struct task_struct *copy_process(
  	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
  		return ERR_PTR(-EINVAL);
  
@@ -88,7 +88,7 @@ index d587c85f35b1ee..3d8e44ef18e51f 100644
  	/*
  	 * Thread groups must share signals as well, and detached threads
  	 * can only be started up within the thread group.
-@@ -3144,6 +3152,12 @@ int ksys_unshare(unsigned long unshare_flags)
+@@ -3159,6 +3167,12 @@ int ksys_unshare(unsigned long unshare_flags)
  	if (unshare_flags & CLONE_NEWNS)
  		unshare_flags |= CLONE_FS;
  
@@ -102,7 +102,7 @@ index d587c85f35b1ee..3d8e44ef18e51f 100644
  	if (err)
  		goto bad_unshare_out;
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 35d0342195132e..8e2c7326f0e813 100644
+index 205d605cacc5bb..d7247ec7ddda34 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -81,6 +81,9 @@
@@ -115,7 +115,7 @@ index 35d0342195132e..8e2c7326f0e813 100644
  
  #if defined(CONFIG_SYSCTL)
  
-@@ -1608,6 +1611,15 @@ static struct ctl_table kern_table[] = {
+@@ -1649,6 +1652,15 @@ static struct ctl_table kern_table[] = {
  		.mode		= 0644,
  		.proc_handler	= proc_dointvec,
  	},
@@ -150,179 +150,13 @@ index 5481ba44a8d684..423ab2563ad757 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 
-From cf4e514f19a13675fce5a6e7aa76e98601279b01 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
-Date: Fri, 13 May 2022 17:28:10 +0300
-Subject: [PATCH 2/9] drm/i915/psr: Use full update In case of area calculation
- fails
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-Currently we have some corner cases where area calculation fails.  For
-these sel fetch area calculation ends up having update area as y1 = 0,
-y2 = 4. Instead of these values safer option is full update.
-
-One of such for example is big fb with offset. We don't have usable
-offset in psr2_sel_fetch_update. Currently it's open what is the
-proper way to fix this corner case. Use full update for now.
-
-v2: Commit message modified
-v3: Print out debug info once when area calculation fails
-v4: Use drm_info_once
-v5: pipeA -> "pipe %c", pipe_name(crtc-pipe)
-
-Cc: José Roberto de Souza <jose.souza@intel.com>
-Cc: Mika Kahola <mika.kahola@intel.com>
-Signed-off-by: Jouni Högander <jouni.hogander@intel.com>
-Reviewed-by: José Roberto de Souza <jose.souza@intel.com>
----
- drivers/gpu/drm/i915/display/intel_psr.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index 06db407e2749f7..fecdaaeac39e08 100644
---- a/drivers/gpu/drm/i915/display/intel_psr.c
-+++ b/drivers/gpu/drm/i915/display/intel_psr.c
-@@ -1685,6 +1685,7 @@ static bool psr2_sel_fetch_pipe_state_supported(const struct intel_crtc_state *c
- int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
- 				struct intel_crtc *crtc)
- {
-+	struct drm_i915_private *dev_priv = to_i915(state->base.dev);
- 	struct intel_crtc_state *crtc_state = intel_atomic_get_new_crtc_state(state, crtc);
- 	struct drm_rect pipe_clip = { .x1 = 0, .y1 = -1, .x2 = INT_MAX, .y2 = -1 };
- 	struct intel_plane_state *new_plane_state, *old_plane_state;
-@@ -1770,6 +1771,19 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
- 		clip_area_update(&pipe_clip, &damaged_area);
- 	}
- 
-+	/*
-+	 * TODO: For now we are just using full update in case
-+	 * selective fetch area calculation fails. To optimize this we
-+	 * should identify cases where this happens and fix the area
-+	 * calculation for those.
-+	 */
-+	if (pipe_clip.y1 == -1) {
-+		drm_info_once(&dev_priv->drm,
-+			      "Selective fetch area calculation failed in pipe %c\n",
-+			      pipe_name(crtc->pipe));
-+		full_update = true;
-+	}
-+
- 	if (full_update)
- 		goto skip_sel_fetch_set_loop;
- 
-
-From 5f2ca4f3f48e484f7b04255f0779cbaffd9ef7fc Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Jouni=20H=C3=B6gander?= <jouni.hogander@intel.com>
-Date: Fri, 13 May 2022 17:28:11 +0300
-Subject: [PATCH 3/9] drm/i915: Ensure damage clip area is within pipe area
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-Current update area calculation is not handling situation where
-e.g. cursor plane is fully or partially outside pipe area.
-
-Fix this by checking damage area against pipe_src area using
-drm_rect_intersect.
-
-v2: Set x1 and x2 in damaged_area initialization
-v3: Move drm_rect_intersect into clip_area_update
-v4: draw_area -> pipe_src
-
-Closes: https://gitlab.freedesktop.org/drm/intel/-/issues/5440
-Cc: José Roberto de Souza <jose.souza@intel.com>
-Cc: Mika Kahola <mika.kahola@intel.com>
-
-Reviewed-by: José Roberto de Souza <jose.souza@intel.com>
-Signed-off-by: Jouni Högander <jouni.hogander@intel.com>
----
- drivers/gpu/drm/i915/display/intel_psr.c | 23 ++++++++++++++++-------
- 1 file changed, 16 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index fecdaaeac39e08..36356893c7caf3 100644
---- a/drivers/gpu/drm/i915/display/intel_psr.c
-+++ b/drivers/gpu/drm/i915/display/intel_psr.c
-@@ -1618,8 +1618,12 @@ static void psr2_man_trk_ctl_calc(struct intel_crtc_state *crtc_state,
- }
- 
- static void clip_area_update(struct drm_rect *overlap_damage_area,
--			     struct drm_rect *damage_area)
-+			     struct drm_rect *damage_area,
-+			     struct drm_rect *pipe_src)
- {
-+	if (!drm_rect_intersect(damage_area, pipe_src))
-+		return;
-+
- 	if (overlap_damage_area->y1 == -1) {
- 		overlap_damage_area->y1 = damage_area->y1;
- 		overlap_damage_area->y2 = damage_area->y2;
-@@ -1709,7 +1713,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
- 	 */
- 	for_each_oldnew_intel_plane_in_state(state, plane, old_plane_state,
- 					     new_plane_state, i) {
--		struct drm_rect src, damaged_area = { .y1 = -1 };
-+		struct drm_rect src, damaged_area = { .x1 = 0, .y1 = -1,
-+						      .x2 = INT_MAX };
- 		struct drm_atomic_helper_damage_iter iter;
- 		struct drm_rect clip;
- 
-@@ -1736,20 +1741,23 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
- 			if (old_plane_state->uapi.visible) {
- 				damaged_area.y1 = old_plane_state->uapi.dst.y1;
- 				damaged_area.y2 = old_plane_state->uapi.dst.y2;
--				clip_area_update(&pipe_clip, &damaged_area);
-+				clip_area_update(&pipe_clip, &damaged_area,
-+						 &crtc_state->pipe_src);
- 			}
- 
- 			if (new_plane_state->uapi.visible) {
- 				damaged_area.y1 = new_plane_state->uapi.dst.y1;
- 				damaged_area.y2 = new_plane_state->uapi.dst.y2;
--				clip_area_update(&pipe_clip, &damaged_area);
-+				clip_area_update(&pipe_clip, &damaged_area,
-+						 &crtc_state->pipe_src);
- 			}
- 			continue;
- 		} else if (new_plane_state->uapi.alpha != old_plane_state->uapi.alpha) {
- 			/* If alpha changed mark the whole plane area as damaged */
- 			damaged_area.y1 = new_plane_state->uapi.dst.y1;
- 			damaged_area.y2 = new_plane_state->uapi.dst.y2;
--			clip_area_update(&pipe_clip, &damaged_area);
-+			clip_area_update(&pipe_clip, &damaged_area,
-+					 &crtc_state->pipe_src);
- 			continue;
- 		}
- 
-@@ -1760,7 +1768,8 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
- 						   &new_plane_state->uapi);
- 		drm_atomic_for_each_plane_damage(&iter, &clip) {
- 			if (drm_rect_intersect(&clip, &src))
--				clip_area_update(&damaged_area, &clip);
-+				clip_area_update(&damaged_area, &clip,
-+						 &crtc_state->pipe_src);
- 		}
- 
- 		if (damaged_area.y1 == -1)
-@@ -1768,7 +1777,7 @@ int intel_psr2_sel_fetch_update(struct intel_atomic_state *state,
- 
- 		damaged_area.y1 += new_plane_state->uapi.dst.y1 - src.y1;
- 		damaged_area.y2 += new_plane_state->uapi.dst.y1 - src.y1;
--		clip_area_update(&pipe_clip, &damaged_area);
-+		clip_area_update(&pipe_clip, &damaged_area, &crtc_state->pipe_src);
- 	}
- 
- 	/*
-
-From a3fba37df44ac9fd315265621d43f7ecf46189b3 Mon Sep 17 00:00:00 2001
+From 2535fbde890f14c78b750139fcf87d1143850626 Mon Sep 17 00:00:00 2001
 From: Johannes Weiner <hannes@cmpxchg.org>
 Date: Tue, 2 Aug 2022 12:28:11 -0400
-Subject: [PATCH 4/9] mm: vmscan: fix extreme overreclaim and swap floods
+Subject: [PATCH 2/4] mm: vmscan: fix extreme overreclaim and swap floods
 
-During proactive reclaim, we sometimes observe severe overreclaim,
-with several thousand times more pages reclaimed than requested.
+During proactive reclaim, we sometimes observe severe overreclaim, with
+several thousand times more pages reclaimed than requested.
 
 This trace was obtained from shrink_lruvec() during such an instance:
 
@@ -330,34 +164,33 @@ This trace was obtained from shrink_lruvec() during such an instance:
     nr_reclaimed:4387406 nr_to_reclaim:1047 (or_factor:4190)
     nr=[7161123 345 578 1111]
 
-While he reclaimer requested 4M, vmscan reclaimed close to 16G, most
-of it by swapping. These requests take over a minute, during which the
-write() to memory.reclaim is unkillably stuck inside the kernel.
+While he reclaimer requested 4M, vmscan reclaimed close to 16G, most of it
+by swapping.  These requests take over a minute, during which the write()
+to memory.reclaim is unkillably stuck inside the kernel.
 
 Digging into the source, this is caused by the proportional reclaim
-bailout logic. This code tries to resolve a fundamental conflict: to
-reclaim roughly what was requested, while also aging all LRUs fairly
-and in accordance to their size, swappiness, refault rates etc. The
-way it attempts fairness is that once the reclaim goal has been
-reached, it stops scanning the LRUs with the smaller remaining scan
-targets, and adjusts the remainder of the bigger LRUs according to how
-much of the smaller LRUs was scanned. It then finishes scanning that
-remainder regardless of the reclaim goal.
+bailout logic.  This code tries to resolve a fundamental conflict: to
+reclaim roughly what was requested, while also aging all LRUs fairly and
+in accordance to their size, swappiness, refault rates etc.  The way it
+attempts fairness is that once the reclaim goal has been reached, it stops
+scanning the LRUs with the smaller remaining scan targets, and adjusts the
+remainder of the bigger LRUs according to how much of the smaller LRUs was
+scanned.  It then finishes scanning that remainder regardless of the
+reclaim goal.
 
 This works fine if priority levels are low and the LRU lists are
-comparable in size. However, in this instance, the cgroup that is
-targeted by proactive reclaim has almost no files left - they've
-already been squeezed out by proactive reclaim earlier - and the
-remaining anon pages are hot. Anon rotations cause the priority level
-to drop to 0, which results in reclaim targeting all of anon (a lot)
-and all of file (almost nothing). By the time reclaim decides to bail,
-it has scanned most or all of the file target, and therefor must also
-scan most or all of the enormous anon target. This target is thousands
-of times larger than the reclaim goal, thus causing the overreclaim.
+comparable in size.  However, in this instance, the cgroup that is
+targeted by proactive reclaim has almost no files left - they've already
+been squeezed out by proactive reclaim earlier - and the remaining anon
+pages are hot.  Anon rotations cause the priority level to drop to 0,
+which results in reclaim targeting all of anon (a lot) and all of file
+(almost nothing).  By the time reclaim decides to bail, it has scanned
+most or all of the file target, and therefor must also scan most or all of
+the enormous anon target.  This target is thousands of times larger than
+the reclaim goal, thus causing the overreclaim.
 
-The bailout code hasn't changed in years, why is this failing now?
-The most likely explanations are two other recent changes in anon
-reclaim:
+The bailout code hasn't changed in years, why is this failing now?  The
+most likely explanations are two other recent changes in anon reclaim:
 
 1. Before the series starting with commit 5df741963d52 ("mm: fix LRU
    balancing effect of new transparent huge pages"), the VM was
@@ -381,31 +214,38 @@ reclaim:
    As a result, the VM is now more likely to actually finish large
    anon targets than before.
 
-Change the code such that only one SWAP_CLUSTER_MAX-sized nudge toward
-the larger LRU lists is made before bailing out on a met reclaim goal.
+Change the code such that only one SWAP_CLUSTER_MAX-sized nudge toward the
+larger LRU lists is made before bailing out on a met reclaim goal.
 
 This fixes the extreme overreclaim problem.
 
-Fairness is more subtle and harder to evaluate. No obvious misbehavior
-was observed on the test workload, in any case. Conceptually, fairness
+Fairness is more subtle and harder to evaluate.  No obvious misbehavior
+was observed on the test workload, in any case.  Conceptually, fairness
 should primarily be a cumulative effect from regular, lower priority
-scans. Once the VM is in trouble and needs to escalate scan targets to
-make forward progress, fairness needs to take a backseat. This is also
-acknowledged by the myriad exceptions in get_scan_count(). This patch
-makes fairness decrease gradually, as it keeps fairness work static
-over increasing priority levels with growing scan targets. This should
-make more sense - although we may have to re-visit the exact values.
+scans.  Once the VM is in trouble and needs to escalate scan targets to
+make forward progress, fairness needs to take a backseat.  This is also
+acknowledged by the myriad exceptions in get_scan_count().  This patch
+makes fairness decrease gradually, as it keeps fairness work static over
+increasing priority levels with growing scan targets.  This should make
+more sense - although we may have to re-visit the exact values.
 
+Link: https://lkml.kernel.org/r/20220802162811.39216-1-hannes@cmpxchg.org
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Reviewed-by: Rik van Riel <riel@surriel.com>
+Acked-by: Mel Gorman <mgorman@techsingularity.net>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
  mm/vmscan.c | 10 ++++------
  1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/mm/vmscan.c b/mm/vmscan.c
-index f7d9a683e3a7d3..1cc0c666678782 100644
+index 382dbe97329f33..266eb8cfe93a67 100644
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -2897,8 +2897,8 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
+@@ -2955,8 +2955,8 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
  	enum lru_list lru;
  	unsigned long nr_reclaimed = 0;
  	unsigned long nr_to_reclaim = sc->nr_to_reclaim;
@@ -415,7 +255,7 @@ index f7d9a683e3a7d3..1cc0c666678782 100644
  
  	get_scan_count(lruvec, sc, nr);
  
-@@ -2916,8 +2916,8 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
+@@ -2974,8 +2974,8 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
  	 * abort proportional reclaim if either the file or anon lru has already
  	 * dropped to zero at the first pass.
  	 */
@@ -426,7 +266,7 @@ index f7d9a683e3a7d3..1cc0c666678782 100644
  
  	blk_start_plug(&plug);
  	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
-@@ -2937,7 +2937,7 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
+@@ -2995,7 +2995,7 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
  
  		cond_resched();
  
@@ -435,7 +275,7 @@ index f7d9a683e3a7d3..1cc0c666678782 100644
  			continue;
  
  		/*
-@@ -2988,8 +2988,6 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
+@@ -3046,8 +3046,6 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
  		nr_scanned = targets[lru] - nr[lru];
  		nr[lru] = targets[lru] * (100 - percentage) / 100;
  		nr[lru] -= min(nr[lru], nr_scanned);
@@ -445,90 +285,10 @@ index f7d9a683e3a7d3..1cc0c666678782 100644
  	blk_finish_plug(&plug);
  	sc->nr_reclaimed += nr_reclaimed;
 
-From 9a64bba0697976a2d72a1b54af712958a6839daf Mon Sep 17 00:00:00 2001
-From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Date: Tue, 21 Jun 2022 17:56:40 -0500
-Subject: [PATCH 5/9] soundwire: intel: use pm_runtime_resume() on component
- probe
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-During the card registration, transactions on the SoundWire bus can be
-initiated. If the ALSA card is registered after the bus suspends,
-timeouts can be seen while reading/writing codec registers. This is
-extremely easy to reproduce in driver bind/unbind tests.
-
-In an initial experiment, the ASoC soc-component.c code was modified
-to initiate a pm_runtime resume on a component probe. The results
-showed this was too invasive. Instead this patch suggests resuming the
-SoundWire component only.
-
-Because of the parent-child hierarchy enforced by the pm_runtime
-framework, it can be argued that the codec component probe should be
-enough to resume all necessary devices, and indeed the same resume
-will be applied to SoundWire codecs used on Intel platforms.
-
-Calling pm_runtime_resume() on both the Intel and codec sides has the
-benefit of resuming the bus without assuming any order during the card
-registration. The first component on a dailink to be probed will
-resume the bus. In addition, if a codec driver did not implement this
-transition, the Intel component would still resume the bus and avoid
-timeouts on card registration.
-
-BugLink: https://github.com/thesofproject/linux/issues/3651
-Reviewed-by: Rander Wang <rander.wang@intel.com>
-Reviewed-by: Ranjani Sridharan <ranjani.sridharan@linux.intel.com>
-Reviewed-by: Bard Liao <yung-chuan.liao@linux.intel.com>
-Reviewed-by: Péter Ujfalusi <peter.ujfalusi@linux.intel.com>
-Signed-off-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Link: https://lore.kernel.org/r/20220621225641.221170-4-pierre-louis.bossart@linux.intel.com
-Signed-off-by: Vinod Koul <vkoul@kernel.org>
----
- drivers/soundwire/intel.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
-
-diff --git a/drivers/soundwire/intel.c b/drivers/soundwire/intel.c
-index 505c5ef061e3f5..95ce292994ccb6 100644
---- a/drivers/soundwire/intel.c
-+++ b/drivers/soundwire/intel.c
-@@ -1043,6 +1043,23 @@ static int intel_trigger(struct snd_pcm_substream *substream, int cmd, struct sn
- 	return ret;
- }
- 
-+static int intel_component_probe(struct snd_soc_component *component)
-+{
-+	int ret;
-+
-+	/*
-+	 * make sure the device is pm_runtime_active before initiating
-+	 * bus transactions during the card registration.
-+	 * We use pm_runtime_resume() here, without taking a reference
-+	 * and releasing it immediately.
-+	 */
-+	ret = pm_runtime_resume(component->dev);
-+	if (ret < 0 && ret != -EACCES)
-+		return ret;
-+
-+	return 0;
-+}
-+
- static int intel_component_dais_suspend(struct snd_soc_component *component)
- {
- 	struct snd_soc_dai *dai;
-@@ -1098,6 +1115,7 @@ static const struct snd_soc_dai_ops intel_pcm_dai_ops = {
- 
- static const struct snd_soc_component_driver dai_component = {
- 	.name           = "soundwire",
-+	.probe		= intel_component_probe,
- 	.suspend	= intel_component_dais_suspend
- };
- 
-
-From c729722b88b401adcc85ffb6089a38262b9bc074 Mon Sep 17 00:00:00 2001
+From 430daaab3c78de6bd82f10cfb5a0f016c6e583f6 Mon Sep 17 00:00:00 2001
 From: Desmond Cheong Zhi Xi <desmondcheongzx@gmail.com>
 Date: Mon, 4 Oct 2021 14:07:34 -0400
-Subject: [PATCH 6/9] Bluetooth: fix deadlock for RFCOMM sk state change
+Subject: [PATCH 3/4] Bluetooth: fix deadlock for RFCOMM sk state change
 
 Syzbot reports the following task hang [1]:
 
@@ -754,136 +514,25 @@ index 4bf4ea6cbb5eee..4850dafbaa05fb 100644
  
  /* ---- Socket functions ---- */
 
-From 22a81ed2eca2d286584527f452e7d5374116e24a Mon Sep 17 00:00:00 2001
-From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Date: Tue, 13 Sep 2022 10:10:36 +0200
-Subject: [PATCH 7/9] ASoC: Intel: sof_sdw: add support for Dell SKU 0AFF
-
-Yet another SKU that needs a quirk for jack detection and four-speaker
-support.
-
-BugLink: https://github.com/thesofproject/linux/issues/3777
-Signed-off-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
----
- sound/soc/intel/boards/sof_sdw.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/sound/soc/intel/boards/sof_sdw.c b/sound/soc/intel/boards/sof_sdw.c
-index ad826ad82d51a7..cfeef8994be311 100644
---- a/sound/soc/intel/boards/sof_sdw.c
-+++ b/sound/soc/intel/boards/sof_sdw.c
-@@ -256,6 +256,16 @@ static const struct dmi_system_id sof_sdw_quirk_table[] = {
- 		.driver_data = (void *)(SOF_SDW_TGL_HDMI |
- 					SOF_SDW_FOUR_SPK),
- 	},
-+	{
-+		.callback = sof_sdw_quirk_cb,
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc"),
-+			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "0AFF")
-+		},
-+		.driver_data = (void *)(SOF_SDW_TGL_HDMI |
-+					RT711_JD2 |
-+					SOF_SDW_FOUR_SPK),
-+	},
- 	{
- 		.callback = sof_sdw_quirk_cb,
- 		.matches = {
-
-From b9ae2f2a2f2a4b93b1f409b3d3e8aa051f2a6e24 Mon Sep 17 00:00:00 2001
-From: Dave Hansen <dave.hansen@intel.com>
-Date: Thu, 22 Sep 2022 11:47:45 -0700
-Subject: [PATCH 8/9] ACPI: processor idle: Practically limit "Dummy wait"
- workaround to old Intel systems
-
-Old, circa 2002 chipsets have a bug: they don't go idle when they are
-supposed to.  So, a workaround was added to slow the CPU down and
-ensure that the CPU waits a bit for the chipset to actually go idle.
-This workaround is ancient and has been in place in some form since
-the original kernel ACPI implementation.
-
-But, this workaround is very painful on modern systems.  The "inl()"
-can take thousands of cycles (see Link: for some more detailed
-numbers and some fun kernel archaeology).
-
-First and foremost, modern systems should not be using this code.
-Typical Intel systems have not used it in over a decade because it is
-horribly inferior to MWAIT-based idle.
-
-Despite this, people do seem to be tripping over this workaround on
-AMD system today.
-
-Limit the "dummy wait" workaround to Intel systems.  Keep Modern AMD
-systems from tripping over the workaround.  Remotely modern Intel
-systems use intel_idle instead of this code and will, in practice,
-remain unaffected by the dummy wait.
-
-Reported-by: K Prateek Nayak <kprateek.nayak@amd.com>
-Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
-Tested-by: K Prateek Nayak <kprateek.nayak@amd.com>
-Link: https://lore.kernel.org/all/20220921063638.2489-1-kprateek.nayak@amd.com/
-Link: https://lkml.kernel.org/r/20220922184745.3252932-1-dave.hansen@intel.com
----
- drivers/acpi/processor_idle.c | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 13200969ccf35c..5168b6624b4296 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -530,10 +530,27 @@ static void wait_for_freeze(void)
- 	/* No delay is needed if we are in guest */
- 	if (boot_cpu_has(X86_FEATURE_HYPERVISOR))
- 		return;
-+	/*
-+	 * Modern (>=Nehalem) Intel systems use ACPI via intel_idle,
-+	 * not this code.  Assume that any Intel systems using this
-+	 * are ancient and may need the dummy wait.  This also assumes
-+	 * that the motivating chipset issue was Intel-only.
-+	 */
-+	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
-+		return;
- #endif
--	/* Dummy wait op - must do something useless after P_LVL2 read
--	   because chipsets cannot guarantee that STPCLK# signal
--	   gets asserted in time to freeze execution properly. */
-+	/*
-+	 * Dummy wait op - must do something useless after P_LVL2 read
-+	 * because chipsets cannot guarantee that STPCLK# signal gets
-+	 * asserted in time to freeze execution properly
-+	 *
-+	 * This workaround has been in place since the original ACPI
-+	 * implementation was merged, circa 2002.
-+	 *
-+	 * If a profile is pointing to this instruction, please first
-+	 * consider moving your system to a more modern idle
-+	 * mechanism.
-+	 */
- 	inl(acpi_gbl_FADT.xpm_timer_block.address);
- }
- 
-
-From 1453e1676baca2d9631977c3ddebb7c4985b05d8 Mon Sep 17 00:00:00 2001
+From 762c7b31dea35d2dcd10eb150e9d9bf085313ee9 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Tue, 4 Oct 2022 16:35:29 +0200
-Subject: [PATCH 9/9] Arch Linux kernel v5.19.13-arch1
+Date: Wed, 12 Oct 2022 20:26:28 +0200
+Subject: [PATCH 4/4] Arch Linux kernel v6.0.1-arch1
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 2ecedf786e2733..2db033f1d56107 100644
+index 3193969f1eb37d..e1827a85a96e57 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
- VERSION = 5
- PATCHLEVEL = 19
- SUBLEVEL = 13
+ VERSION = 6
+ PATCHLEVEL = 0
+ SUBLEVEL = 1
 -EXTRAVERSION =
 +EXTRAVERSION = -arch1
- NAME = Superb Owl
+ NAME = Hurr durr I'ma ninja sloth
  
  # *DOCUMENTATION*

@@ -4,7 +4,7 @@
 #               apple-ibridge drivers, respectively.
 
 pkgbase=linux-t2
-pkgver=5.19.13
+pkgver=6.0.1
 _srcname=linux-${pkgver}
 pkgrel=1
 pkgdesc='Linux kernel for T2 Macs'
@@ -28,7 +28,7 @@ source=(
   0001-arch-additions.patch
 
   # apple-bce, apple-ibridge
-  apple-bce::git+https://github.com/t2linux/apple-bce-drv#commit=f93c6566f98b3c95677de8010f7445fa19f75091
+  apple-bce::git+https://github.com/t2linux/apple-bce-drv#commit=6988ec2f08ed7092211540ae977f4ddb56d4fd49
   apple-ibridge::git+https://github.com/Redecorating/apple-ib-drv#commit=467df9b11cb55456f0365f40dd11c9e666623bf3
 
   1001-Put-apple-bce-and-apple-ibridge-in-drivers-staging.patch
@@ -42,7 +42,6 @@ source=(
 
   # Misc BCE patches
   2011-change-many-info-logs-to-debug.patch
-  2012-vhci-drop_endpoint-check-for-null-vdev.patch
   2013-aaudio-set-the-card-driver-name-to-AppleT2x-channel-.patch
 
   # Apple SMC ACPI support
@@ -259,10 +258,10 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('4ecdb8b59c6f6f258d89cbf22eede210e0a55c09db884988fe706efe2fe8f148'
+sha256sums=('8ede745a69351ea0f27fe0c48780d4efa37ff086135e129358ce09694957e8f9'
             'SKIP'
-            '1e07bdd94abe73ac2074b151729cd9b73c7fa7a615a3a331a89dcb0da42649f8'
-            '3af7230af822e2ec1c741b75912553e17f752bdc08317c564935d38092afe04b'
+            '6ed43ed093ec7dcbbac286edc204873edfa77e380ac43c8cc2f40b2965ac1aa3'
+            '4f234a9a785f5685de298e042badf6e36e7d9aeafa962b340af8c859ca84a221'
             'SKIP'
             'SKIP'
             '4482f285a66a31561452c81f232ec9c4396dc95c40a37645c7c47d7bc8b26184'
@@ -270,7 +269,6 @@ sha256sums=('4ecdb8b59c6f6f258d89cbf22eede210e0a55c09db884988fe706efe2fe8f148'
             '45b911e592dd6c717e77ec4d8cbf844860bb7c29ace7a7170e7bf59c12e91bb4'
             'c0807635ea60e5d8adf344ca50e39ab91322e984dda797a17efdc8ba19cc5dd5'
             '32d3915b4d50cfc654dda53e65e633d1e99b6c98795cbb7416f1ae8fe1ea2321'
-            'b5959f15fb744a1c4ab02bb01b49ef214d2f56cb350dadee241a31a01765612c'
             '515756555e7a6178f38c82bb1dbc2919aa9660ee8b9e158f3764948578dee92c'
             'cfd23a06797ac86575044428a393dd7f10f06eff7648d0b78aedad82cbe41279'
             '8d8401a99a9dfbc41aa2dc5b6a409a19860b1b918465e19de4a4ff18de075ea3'
@@ -284,5 +282,5 @@ sha256sums=('4ecdb8b59c6f6f258d89cbf22eede210e0a55c09db884988fe706efe2fe8f148'
             '4db195e0bda5712e60a78266c1458037063e5debd646b08376c4700a27d4b4ef'
             '9ede98eceb69e9c93e25fdb2c567466963bdd2f81c0ecb9fb9e5107f6142ff26'
             'e27a4acdb9027a0652d558d619b5be3dc916d2472f3b4d01d10932fc6f35f8dc'
-            '20d6086c639b170c941f272a4958ad3c7fbf506d919024883f5e3e6199dcde56')
+            'fc22ff1285552a85148ec5c21a9e5d93f2420a806ebdc53894636ec5f17505a8')
 # vim:set ts=8 sts=2 sw=2 et:
