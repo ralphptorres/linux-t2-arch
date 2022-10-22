@@ -4,7 +4,7 @@
 #               apple-ibridge drivers, respectively.
 
 pkgbase=linux-t2
-pkgver=6.0.1
+pkgver=6.0.2
 _srcname=linux-${pkgver}
 pkgrel=1
 pkgdesc='Linux kernel for T2 Macs'
@@ -34,8 +34,9 @@ source=(
   1001-Put-apple-bce-and-apple-ibridge-in-drivers-staging.patch
   1002-add-modalias-to-apple-bce.patch
 
-  # Fix some acpi errors
+  # EFI and ACPI fixes
   2001-fix-acpica-for-zero-arguments-acpi-calls.patch
+  2002-efi-nvram-write-fix.patch
 
   # Misc BCE patches
   2011-change-many-info-logs-to-debug.patch
@@ -255,15 +256,16 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('8ede745a69351ea0f27fe0c48780d4efa37ff086135e129358ce09694957e8f9'
+sha256sums=('a13c26388cacccb684cd9f51109596a280c8186b7e95174d31ee7c5718e95c9d'
             'SKIP'
             '6ed43ed093ec7dcbbac286edc204873edfa77e380ac43c8cc2f40b2965ac1aa3'
-            '4f234a9a785f5685de298e042badf6e36e7d9aeafa962b340af8c859ca84a221'
+            '4c60a45dc1f481f1920c00a2cdef26c6de98b10393f7670bc54ecac6722662a9'
             'SKIP'
             'SKIP'
             '4482f285a66a31561452c81f232ec9c4396dc95c40a37645c7c47d7bc8b26184'
             'a3a43feaffccbcd119f4a1b4e1299ef07ae36ef9bffc17767bf10e447fa02a2a'
             '45b911e592dd6c717e77ec4d8cbf844860bb7c29ace7a7170e7bf59c12e91bb4'
+            '5fdeefc65d6b5cca2558b93f47669749560aeba38f03cef53499d97bf3ed126c'
             '32d3915b4d50cfc654dda53e65e633d1e99b6c98795cbb7416f1ae8fe1ea2321'
             '515756555e7a6178f38c82bb1dbc2919aa9660ee8b9e158f3764948578dee92c'
             'cfd23a06797ac86575044428a393dd7f10f06eff7648d0b78aedad82cbe41279'
