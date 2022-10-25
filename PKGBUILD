@@ -6,7 +6,7 @@
 pkgbase=linux-t2
 pkgver=6.0.2
 _srcname=linux-${pkgver}
-pkgrel=1
+pkgrel=2
 pkgdesc='Linux kernel for T2 Macs'
 _srctag=v${pkgver%.*}-${pkgver##*.}
 url="https://github.com/archlinux/linux/commits/$_srctag"
@@ -68,6 +68,7 @@ source=(
   # Broadcom BCM4377 BT device support
   # https://github.com/AsahiLinux/linux/commits/bluetooth-wip
   8002-asahilinux-hci_bcm4377-patchset.patch
+  8003-hci_bcm4377-disable-bcm4377_send_ptb-due-to-timeout-.patch
 )
 validpgpkeys=(
   'ABAF11C65A2970B130ABE3C479BE3E4300411886'  # Linus Torvalds
@@ -280,5 +281,6 @@ sha256sums=('a13c26388cacccb684cd9f51109596a280c8186b7e95174d31ee7c5718e95c9d'
             '4db195e0bda5712e60a78266c1458037063e5debd646b08376c4700a27d4b4ef'
             '9ede98eceb69e9c93e25fdb2c567466963bdd2f81c0ecb9fb9e5107f6142ff26'
             'e27a4acdb9027a0652d558d619b5be3dc916d2472f3b4d01d10932fc6f35f8dc'
-            'fc22ff1285552a85148ec5c21a9e5d93f2420a806ebdc53894636ec5f17505a8')
+            'fc22ff1285552a85148ec5c21a9e5d93f2420a806ebdc53894636ec5f17505a8'
+            '516aa8ef1f958dbc66c27c7231065e41abeeefa9ce5eb96ae7a96a9b0da09aff')
 # vim:set ts=8 sts=2 sw=2 et:
