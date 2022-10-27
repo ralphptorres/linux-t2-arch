@@ -14,7 +14,7 @@ Our default behavior continues to match the vanilla kernel.
  5 files changed, 53 insertions(+)
 
 diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
-index 33a4240e6a6f17..82213f9c4c17fb 100644
+index 33a4240e6a6f1..82213f9c4c17f 100644
 --- a/include/linux/user_namespace.h
 +++ b/include/linux/user_namespace.h
 @@ -139,6 +139,8 @@ static inline void set_rlimit_ucount_max(struct user_namespace *ns,
@@ -36,7 +36,7 @@ index 33a4240e6a6f17..82213f9c4c17fb 100644
  {
  	return &init_user_ns;
 diff --git a/init/Kconfig b/init/Kconfig
-index 532362fcfe31fd..f13bb9f371a2c6 100644
+index 532362fcfe31f..f13bb9f371a2c 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -1241,6 +1241,22 @@ config USER_NS
@@ -63,7 +63,7 @@ index 532362fcfe31fd..f13bb9f371a2c6 100644
  	bool "PID Namespaces"
  	default y
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 2b6bd511c6ed1c..704fe6bc9cb4df 100644
+index 2b6bd511c6ed1..704fe6bc9cb4d 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -99,6 +99,10 @@
@@ -102,7 +102,7 @@ index 2b6bd511c6ed1c..704fe6bc9cb4df 100644
  	if (err)
  		goto bad_unshare_out;
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 205d605cacc5bb..d7247ec7ddda34 100644
+index 205d605cacc5b..d7247ec7ddda3 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -81,6 +81,9 @@
@@ -132,7 +132,7 @@ index 205d605cacc5bb..d7247ec7ddda34 100644
  	{
  		.procname	= "tainted",
 diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-index 5481ba44a8d684..423ab2563ad757 100644
+index 5481ba44a8d68..423ab2563ad75 100644
 --- a/kernel/user_namespace.c
 +++ b/kernel/user_namespace.c
 @@ -21,6 +21,13 @@
@@ -242,7 +242,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 382dbe97329f33..266eb8cfe93a67 100644
+index 382dbe97329f3..266eb8cfe93a6 100644
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
 @@ -2955,8 +2955,8 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
@@ -404,7 +404,7 @@ Cc: Hillf Danton <hdanton@sina.com>
  3 files changed, 27 insertions(+), 12 deletions(-)
 
 diff --git a/include/net/bluetooth/rfcomm.h b/include/net/bluetooth/rfcomm.h
-index 99d26879b02a53..a92799fc5e74d0 100644
+index 99d26879b02a5..a92799fc5e74d 100644
 --- a/include/net/bluetooth/rfcomm.h
 +++ b/include/net/bluetooth/rfcomm.h
 @@ -171,6 +171,7 @@ struct rfcomm_dlc {
@@ -432,7 +432,7 @@ index 99d26879b02a53..a92799fc5e74d0 100644
  void rfcomm_cleanup_sockets(void);
  
 diff --git a/net/bluetooth/rfcomm/core.c b/net/bluetooth/rfcomm/core.c
-index 7324764384b677..c6494e85cd68b2 100644
+index 7324764384b67..c6494e85cd68b 100644
 --- a/net/bluetooth/rfcomm/core.c
 +++ b/net/bluetooth/rfcomm/core.c
 @@ -289,6 +289,7 @@ static void rfcomm_dlc_clear_state(struct rfcomm_dlc *d)
@@ -452,7 +452,7 @@ index 7324764384b677..c6494e85cd68b2 100644
  	refcount_set(&d->refcnt, 1);
  
 diff --git a/net/bluetooth/rfcomm/sock.c b/net/bluetooth/rfcomm/sock.c
-index 4bf4ea6cbb5eee..4850dafbaa05fb 100644
+index 4bf4ea6cbb5ee..4850dafbaa05f 100644
 --- a/net/bluetooth/rfcomm/sock.c
 +++ b/net/bluetooth/rfcomm/sock.c
 @@ -61,19 +61,22 @@ static void rfcomm_sk_data_ready(struct rfcomm_dlc *d, struct sk_buff *skb)
@@ -524,7 +524,7 @@ Subject: [PATCH 4/4] Arch Linux kernel v6.0.2-arch1
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index aa449693ad09da..5f72ddf03bb0f9 100644
+index aa449693ad09d..5f72ddf03bb0f 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
