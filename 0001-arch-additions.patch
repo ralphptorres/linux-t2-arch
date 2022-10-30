@@ -1,7 +1,7 @@
-From 767b739b11e38223e147a890243923856b6bc9b9 Mon Sep 17 00:00:00 2001
+From 1543612638104ffc846deb5f2270a6ecdd015298 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
 Date: Mon, 16 Sep 2019 04:53:20 +0200
-Subject: [PATCH 1/4] ZEN: Add sysctl and CONFIG to disallow unprivileged
+Subject: [PATCH 1/8] ZEN: Add sysctl and CONFIG to disallow unprivileged
  CLONE_NEWUSER
 
 Our default behavior continues to match the vanilla kernel.
@@ -14,7 +14,7 @@ Our default behavior continues to match the vanilla kernel.
  5 files changed, 53 insertions(+)
 
 diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
-index 33a4240e6a6f1..82213f9c4c17f 100644
+index 33a4240e6a6f17..82213f9c4c17fb 100644
 --- a/include/linux/user_namespace.h
 +++ b/include/linux/user_namespace.h
 @@ -139,6 +139,8 @@ static inline void set_rlimit_ucount_max(struct user_namespace *ns,
@@ -36,7 +36,7 @@ index 33a4240e6a6f1..82213f9c4c17f 100644
  {
  	return &init_user_ns;
 diff --git a/init/Kconfig b/init/Kconfig
-index 532362fcfe31f..f13bb9f371a2c 100644
+index 532362fcfe31fd..f13bb9f371a2c6 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -1241,6 +1241,22 @@ config USER_NS
@@ -63,7 +63,7 @@ index 532362fcfe31f..f13bb9f371a2c 100644
  	bool "PID Namespaces"
  	default y
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 2b6bd511c6ed1..704fe6bc9cb4d 100644
+index 2b6bd511c6ed1c..704fe6bc9cb4df 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -99,6 +99,10 @@
@@ -102,7 +102,7 @@ index 2b6bd511c6ed1..704fe6bc9cb4d 100644
  	if (err)
  		goto bad_unshare_out;
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 205d605cacc5b..d7247ec7ddda3 100644
+index 205d605cacc5bb..d7247ec7ddda34 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -81,6 +81,9 @@
@@ -132,7 +132,7 @@ index 205d605cacc5b..d7247ec7ddda3 100644
  	{
  		.procname	= "tainted",
 diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-index 5481ba44a8d68..423ab2563ad75 100644
+index 5481ba44a8d684..423ab2563ad757 100644
 --- a/kernel/user_namespace.c
 +++ b/kernel/user_namespace.c
 @@ -21,6 +21,13 @@
@@ -150,10 +150,10 @@ index 5481ba44a8d68..423ab2563ad75 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 
-From 53d3043700195a20fe3d308707e43b90b6bff0b1 Mon Sep 17 00:00:00 2001
+From a122e8b8bb99f204887c1ed634dff7e81f9319d4 Mon Sep 17 00:00:00 2001
 From: Johannes Weiner <hannes@cmpxchg.org>
 Date: Tue, 2 Aug 2022 12:28:11 -0400
-Subject: [PATCH 2/4] mm: vmscan: fix extreme overreclaim and swap floods
+Subject: [PATCH 2/8] mm: vmscan: fix extreme overreclaim and swap floods
 
 During proactive reclaim, we sometimes observe severe overreclaim, with
 several thousand times more pages reclaimed than requested.
@@ -242,7 +242,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 382dbe97329f3..266eb8cfe93a6 100644
+index 382dbe97329f33..266eb8cfe93a67 100644
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
 @@ -2955,8 +2955,8 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
@@ -285,252 +285,245 @@ index 382dbe97329f3..266eb8cfe93a6 100644
  	blk_finish_plug(&plug);
  	sc->nr_reclaimed += nr_reclaimed;
 
-From f5f2d7131ea930f307fbbf101c93e2493821f687 Mon Sep 17 00:00:00 2001
-From: Desmond Cheong Zhi Xi <desmondcheongzx@gmail.com>
-Date: Mon, 4 Oct 2021 14:07:34 -0400
-Subject: [PATCH 3/4] Bluetooth: fix deadlock for RFCOMM sk state change
+From 83516bf1e37c5a1d2dbabf7b6ac85da55256e9f3 Mon Sep 17 00:00:00 2001
+From: Sjoerd Simons <sjoerd@collabora.com>
+Date: Sat, 8 Oct 2022 21:57:51 +0200
+Subject: [PATCH 3/8] soundwire: intel: Initialize clock stop timeout
 
-Syzbot reports the following task hang [1]:
+The bus->clk_stop_timeout member is only initialized to a non-zero value
+during the codec driver probe. This can lead to corner cases where this
+value remains pegged at zero when the bus suspends, which results in an
+endless loop in sdw_bus_wait_for_clk_prep_deprep().
 
-INFO: task syz-executor255:8499 blocked for more than 143 seconds.
-      Not tainted 5.14.0-rc7-syzkaller #0
+Corner cases include configurations with no codecs described in the
+firmware, or delays in probing codec drivers.
 
-Call Trace:
- context_switch kernel/sched/core.c:4681 [inline]
- __schedule+0x93a/0x26f0 kernel/sched/core.c:5938
- schedule+0xd3/0x270 kernel/sched/core.c:6017
- __lock_sock+0x13d/0x260 net/core/sock.c:2644
- lock_sock_nested+0xf6/0x120 net/core/sock.c:3185
- lock_sock include/net/sock.h:1612 [inline]
- rfcomm_sk_state_change+0xb4/0x390 net/bluetooth/rfcomm/sock.c:73
- __rfcomm_dlc_close+0x1b6/0x8a0 net/bluetooth/rfcomm/core.c:489
- rfcomm_dlc_close+0x1ea/0x240 net/bluetooth/rfcomm/core.c:520
- __rfcomm_sock_close+0xac/0x260 net/bluetooth/rfcomm/sock.c:220
- rfcomm_sock_shutdown+0xe9/0x210 net/bluetooth/rfcomm/sock.c:931
- rfcomm_sock_release+0x5f/0x140 net/bluetooth/rfcomm/sock.c:951
- __sock_release+0xcd/0x280 net/socket.c:649
- sock_close+0x18/0x20 net/socket.c:1314
- __fput+0x288/0x920 fs/file_table.c:280
- task_work_run+0xdd/0x1a0 kernel/task_work.c:164
- exit_task_work include/linux/task_work.h:32 [inline]
- do_exit+0xbd4/0x2a60 kernel/exit.c:825
- do_group_exit+0x125/0x310 kernel/exit.c:922
- get_signal+0x47f/0x2160 kernel/signal.c:2808
- arch_do_signal_or_restart+0x2a9/0x1c40 arch/x86/kernel/signal.c:865
- handle_signal_work kernel/entry/common.c:148 [inline]
- exit_to_user_mode_loop kernel/entry/common.c:172 [inline]
- exit_to_user_mode_prepare+0x17d/0x290 kernel/entry/common.c:209
- __syscall_exit_to_user_mode_work kernel/entry/common.c:291 [inline]
- syscall_exit_to_user_mode+0x19/0x60 kernel/entry/common.c:302
- do_syscall_64+0x42/0xb0 arch/x86/entry/common.c:86
- entry_SYSCALL_64_after_hwframe+0x44/0xae
+Initializing the default timeout to the smallest non-zero value avoid this
+problem and allows for the existing logic to be preserved: the
+bus->clk_stop_timeout is set as the maximum required by all codecs
+connected on the bus.
 
-Showing all locks held in the system:
-1 lock held by khungtaskd/1653:
- #0: ffffffff8b97c280 (rcu_read_lock){....}-{1:2}, at:
- debug_show_all_locks+0x53/0x260 kernel/locking/lockdep.c:6446
-1 lock held by krfcommd/4781:
- #0: ffffffff8d306528 (rfcomm_mutex){+.+.}-{3:3}, at:
- rfcomm_process_sessions net/bluetooth/rfcomm/core.c:1979 [inline]
- #0: ffffffff8d306528 (rfcomm_mutex){+.+.}-{3:3}, at:
- rfcomm_run+0x2ed/0x4a20 net/bluetooth/rfcomm/core.c:2086
-2 locks held by in:imklog/8206:
- #0: ffff8880182ce5f0 (&f->f_pos_lock){+.+.}-{3:3}, at:
- __fdget_pos+0xe9/0x100 fs/file.c:974
- #1: ffff8880b9c51a58 (&rq->__lock){-.-.}-{2:2}, at:
- raw_spin_rq_lock_nested kernel/sched/core.c:460 [inline]
- #1: ffff8880b9c51a58 (&rq->__lock){-.-.}-{2:2}, at: raw_spin_rq_lock
- kernel/sched/sched.h:1307 [inline]
- #1: ffff8880b9c51a58 (&rq->__lock){-.-.}-{2:2}, at: rq_lock
- kernel/sched/sched.h:1610 [inline]
- #1: ffff8880b9c51a58 (&rq->__lock){-.-.}-{2:2}, at:
- __schedule+0x233/0x26f0 kernel/sched/core.c:5852
-4 locks held by syz-executor255/8499:
- #0: ffff888039a83690 (&sb->s_type->i_mutex_key#13){+.+.}-{3:3}, at:
- inode_lock include/linux/fs.h:774 [inline]
- #0: ffff888039a83690 (&sb->s_type->i_mutex_key#13){+.+.}-{3:3}, at:
- __sock_release+0x86/0x280 net/socket.c:648
- #1:
- ffff88802fa31120 (sk_lock-AF_BLUETOOTH-BTPROTO_RFCOMM){+.+.}-{0:0},
- at: lock_sock include/net/sock.h:1612 [inline]
- #1:
- ffff88802fa31120 (sk_lock-AF_BLUETOOTH-BTPROTO_RFCOMM){+.+.}-{0:0},
- at: rfcomm_sock_shutdown+0x54/0x210 net/bluetooth/rfcomm/sock.c:928
- #2: ffffffff8d306528 (rfcomm_mutex){+.+.}-{3:3}, at:
- rfcomm_dlc_close+0x34/0x240 net/bluetooth/rfcomm/core.c:507
- #3: ffff888141bd6d28 (&d->lock){+.+.}-{3:3}, at:
- __rfcomm_dlc_close+0x162/0x8a0 net/bluetooth/rfcomm/core.c:487
-==================================================================
-
-The task hangs because of a deadlock that occurs when lock_sock() is
-called in rfcomm_sk_state_change(). One such call stack is:
-
-  rfcomm_sock_shutdown():
-    lock_sock();
-    __rfcomm_sock_close():
-      rfcomm_dlc_close():
-        __rfcomm_dlc_close():
-          rfcomm_dlc_lock();
-          rfcomm_sk_state_change():
-            lock_sock();
-
-lock_sock() has to be called when the sk state is changed because the
-lock is not always held when rfcomm_sk_state_change() is
-called. However, besides the recursive deadlock, there is also an
-issue of a lock hierarchy inversion between rfcomm_dlc_lock() and
-lock_sock() if the socket is locked in rfcomm_sk_state_change().
-
-To avoid these issues, we can instead schedule the sk state change in
-the global workqueue. This is already the implicit assumption about
-how sk state changes happen. For example, in rfcomm_sock_shutdown(),
-the call to __rfcomm_sock_close() is followed by
-bt_sock_wait_state().
-
-Additionally, the call to rfcomm_sock_kill() inside
-rfcomm_sk_state_change() should be removed. The socket shouldn't be
-killed here because only rfcomm_sock_release() calls sock_orphan(),
-which it already follows up with a call to rfcomm_sock_kill().
-
-Fixes: b7ce436a5d79 ("Bluetooth: switch to lock_sock in RFCOMM")
-Link: https://syzkaller.appspot.com/bug?extid=7d51f807c81b190a127d [1]
-Reported-by: syzbot+7d51f807c81b190a127d@syzkaller.appspotmail.com
-Tested-by: syzbot+7d51f807c81b190a127d@syzkaller.appspotmail.com
-Signed-off-by: Desmond Cheong Zhi Xi <desmondcheongzx@gmail.com>
-Cc: Hillf Danton <hdanton@sina.com>
+Signed-off-by: Sjoerd Simons <sjoerd@collabora.com>
 ---
- include/net/bluetooth/rfcomm.h |  3 +++
- net/bluetooth/rfcomm/core.c    |  2 ++
- net/bluetooth/rfcomm/sock.c    | 34 ++++++++++++++++++++++------------
- 3 files changed, 27 insertions(+), 12 deletions(-)
+ drivers/soundwire/intel.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/include/net/bluetooth/rfcomm.h b/include/net/bluetooth/rfcomm.h
-index 99d26879b02a5..a92799fc5e74d 100644
---- a/include/net/bluetooth/rfcomm.h
-+++ b/include/net/bluetooth/rfcomm.h
-@@ -171,6 +171,7 @@ struct rfcomm_dlc {
- 	struct rfcomm_session *session;
- 	struct sk_buff_head   tx_queue;
- 	struct timer_list     timer;
-+	struct work_struct    state_change_work;
+diff --git a/drivers/soundwire/intel.c b/drivers/soundwire/intel.c
+index af6c1a93372d90..002bc26b525e87 100644
+--- a/drivers/soundwire/intel.c
++++ b/drivers/soundwire/intel.c
+@@ -1307,6 +1307,7 @@ static int intel_link_probe(struct auxiliary_device *auxdev,
+ 	cdns->msg_count = 0;
  
- 	struct mutex  lock;
- 	unsigned long state;
-@@ -186,6 +187,7 @@ struct rfcomm_dlc {
- 	u8            sec_level;
- 	u8            role_switch;
- 	u32           defer_setup;
-+	int           err;
+ 	bus->link_id = auxdev->id;
++	bus->clk_stop_timeout = 1;
  
- 	uint          mtu;
- 	uint          cfc;
-@@ -310,6 +312,7 @@ struct rfcomm_pinfo {
- 	u8     role_switch;
- };
+ 	sdw_cdns_probe(cdns);
  
-+void __rfcomm_sk_state_change(struct work_struct *work);
- int  rfcomm_init_sockets(void);
- void rfcomm_cleanup_sockets(void);
- 
-diff --git a/net/bluetooth/rfcomm/core.c b/net/bluetooth/rfcomm/core.c
-index 7324764384b67..c6494e85cd68b 100644
---- a/net/bluetooth/rfcomm/core.c
-+++ b/net/bluetooth/rfcomm/core.c
-@@ -289,6 +289,7 @@ static void rfcomm_dlc_clear_state(struct rfcomm_dlc *d)
- 	d->flags      = 0;
- 	d->mscex      = 0;
- 	d->sec_level  = BT_SECURITY_LOW;
-+	d->err        = 0;
- 	d->mtu        = RFCOMM_DEFAULT_MTU;
- 	d->v24_sig    = RFCOMM_V24_RTC | RFCOMM_V24_RTR | RFCOMM_V24_DV;
- 
-@@ -306,6 +307,7 @@ struct rfcomm_dlc *rfcomm_dlc_alloc(gfp_t prio)
- 	timer_setup(&d->timer, rfcomm_dlc_timeout, 0);
- 
- 	skb_queue_head_init(&d->tx_queue);
-+	INIT_WORK(&d->state_change_work, __rfcomm_sk_state_change);
- 	mutex_init(&d->lock);
- 	refcount_set(&d->refcnt, 1);
- 
-diff --git a/net/bluetooth/rfcomm/sock.c b/net/bluetooth/rfcomm/sock.c
-index 4bf4ea6cbb5ee..4850dafbaa05f 100644
---- a/net/bluetooth/rfcomm/sock.c
-+++ b/net/bluetooth/rfcomm/sock.c
-@@ -61,19 +61,22 @@ static void rfcomm_sk_data_ready(struct rfcomm_dlc *d, struct sk_buff *skb)
- 		rfcomm_dlc_throttle(d);
- }
- 
--static void rfcomm_sk_state_change(struct rfcomm_dlc *d, int err)
-+void __rfcomm_sk_state_change(struct work_struct *work)
- {
-+	struct rfcomm_dlc *d = container_of(work, struct rfcomm_dlc,
-+					    state_change_work);
- 	struct sock *sk = d->owner, *parent;
- 
- 	if (!sk)
- 		return;
- 
--	BT_DBG("dlc %p state %ld err %d", d, d->state, err);
--
- 	lock_sock(sk);
-+	rfcomm_dlc_lock(d);
- 
--	if (err)
--		sk->sk_err = err;
-+	BT_DBG("dlc %p state %ld err %d", d, d->state, d->err);
-+
-+	if (d->err)
-+		sk->sk_err = d->err;
- 
- 	sk->sk_state = d->state;
- 
-@@ -91,15 +94,22 @@ static void rfcomm_sk_state_change(struct rfcomm_dlc *d, int err)
- 		sk->sk_state_change(sk);
+
+From 31cf53d955bb15b8ac907ca9e6fc45e43c7bf6c7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
+Date: Fri, 7 Oct 2022 09:51:13 +0200
+Subject: [PATCH 4/8] drm/sched: add DRM_SCHED_FENCE_DONT_PIPELINE flag
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Setting this flag on a scheduler fence prevents pipelining of jobs
+depending on this fence. In other words we always insert a full CPU
+round trip before dependen jobs are pushed to the pipeline.
+
+Signed-off-by: Christian König <christian.koenig@amd.com>
+---
+ drivers/gpu/drm/scheduler/sched_entity.c | 3 ++-
+ include/drm/gpu_scheduler.h              | 9 +++++++++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/scheduler/sched_entity.c b/drivers/gpu/drm/scheduler/sched_entity.c
+index 6b25b2f4f5a308..6137537aaea4df 100644
+--- a/drivers/gpu/drm/scheduler/sched_entity.c
++++ b/drivers/gpu/drm/scheduler/sched_entity.c
+@@ -385,7 +385,8 @@ static bool drm_sched_entity_add_dependency_cb(struct drm_sched_entity *entity)
  	}
  
-+	rfcomm_dlc_unlock(d);
- 	release_sock(sk);
-+	sock_put(sk);
-+}
+ 	s_fence = to_drm_sched_fence(fence);
+-	if (s_fence && s_fence->sched == sched) {
++	if (s_fence && s_fence->sched == sched &&
++	    !test_bit(DRM_SCHED_FENCE_DONT_PIPELINE, &fence->flags)) {
  
--	if (parent && sock_flag(sk, SOCK_ZAPPED)) {
--		/* We have to drop DLC lock here, otherwise
--		 * rfcomm_sock_destruct() will dead lock. */
--		rfcomm_dlc_unlock(d);
--		rfcomm_sock_kill(sk);
--		rfcomm_dlc_lock(d);
--	}
-+static void rfcomm_sk_state_change(struct rfcomm_dlc *d, int err)
-+{
-+	struct sock *sk = d->owner;
+ 		/*
+ 		 * Fence is from the same scheduler, only need to wait for
+diff --git a/include/drm/gpu_scheduler.h b/include/drm/gpu_scheduler.h
+index addb135eeea622..289a33e8063978 100644
+--- a/include/drm/gpu_scheduler.h
++++ b/include/drm/gpu_scheduler.h
+@@ -32,6 +32,15 @@
+ 
+ #define MAX_WAIT_SCHED_ENTITY_Q_EMPTY msecs_to_jiffies(1000)
+ 
++/**
++ * DRM_SCHED_FENCE_DONT_PIPELINE - Prefent dependency pipelining
++ *
++ * Setting this flag on a scheduler fence prevents pipelining of jobs depending
++ * on this fence. In other words we always insert a full CPU round trip before
++ * dependen jobs are pushed to the hw queue.
++ */
++#define DRM_SCHED_FENCE_DONT_PIPELINE	DMA_FENCE_FLAG_USER_BITS
 +
-+	if (!sk)
-+		return;
+ struct drm_gem_object;
+ 
+ struct drm_gpu_scheduler;
+
+From c530bd41a8b1891760b80d1b45a04abd328df34d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
+Date: Fri, 7 Oct 2022 10:59:58 +0200
+Subject: [PATCH 5/8] drm/amdgpu: use DRM_SCHED_FENCE_DONT_PIPELINE for VM
+ updates
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Make sure that we always have a CPU round trip to let the submission
+code correctly decide if a TLB flush is necessary or not.
+
+Signed-off-by: Christian König <christian.koenig@amd.com>
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c
+index 718db7d98e5a30..25ad3c7fa24bea 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c
+@@ -115,8 +115,15 @@ static int amdgpu_vm_sdma_commit(struct amdgpu_vm_update_params *p,
+ 		amdgpu_bo_fence(p->vm->root.bo, f, true);
+ 	}
+ 
+-	if (fence && !p->immediate)
++	if (fence && !p->immediate) {
++		/*
++		 * Most hw generations now have a separate queue for page table
++		 * updates, but when the queue is shared with userspace we need
++		 * the extra CPU round trip to correctly flush the TLB.
++		 */
++		set_bit(DRM_SCHED_FENCE_DONT_PIPELINE, &f->flags);
+ 		swap(*fence, f);
++	}
+ 	dma_fence_put(f);
+ 	return 0;
+ 
+
+From 72ab61d408797cd72471070f6ff6f5dc94d2d938 Mon Sep 17 00:00:00 2001
+From: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
+Date: Tue, 4 Oct 2022 07:33:39 -0700
+Subject: [PATCH 6/8] drm/amdgpu: Fix VRAM BO swap issue
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+DRM buddy manager allocates the contiguous memory requests in
+a single block or multiple blocks. So for the ttm move operation
+(incase of low vram memory) we should consider all the blocks to
+compute the total memory size which compared with the struct
+ttm_resource num_pages in order to verify that the blocks are
+contiguous for the eviction process.
+
+v2: Added a Fixes tag
+v3: Rewrite the code to save a bit of calculations and
+    variables (Christian)
+
+Fixes: c9cad937c0c5 ("drm/amdgpu: add drm buddy support to amdgpu")
+Signed-off-by: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
+Reviewed-by: Christian König <christian.koenig@amd.com>
+Signed-off-by: Alex Deucher <alexander.deucher@amd.com>
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
+index 134575a3893c53..794062ab57fca4 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
+@@ -424,8 +424,9 @@ static int amdgpu_move_blit(struct ttm_buffer_object *bo,
+ static bool amdgpu_mem_visible(struct amdgpu_device *adev,
+ 			       struct ttm_resource *mem)
+ {
+-	uint64_t mem_size = (u64)mem->num_pages << PAGE_SHIFT;
++	u64 mem_size = (u64)mem->num_pages << PAGE_SHIFT;
+ 	struct amdgpu_res_cursor cursor;
++	u64 end;
+ 
+ 	if (mem->mem_type == TTM_PL_SYSTEM ||
+ 	    mem->mem_type == TTM_PL_TT)
+@@ -434,12 +435,18 @@ static bool amdgpu_mem_visible(struct amdgpu_device *adev,
+ 		return false;
+ 
+ 	amdgpu_res_first(mem, 0, mem_size, &cursor);
++	end = cursor.start + cursor.size;
++	while (cursor.remaining) {
++		amdgpu_res_next(&cursor, cursor.size);
+ 
+-	/* ttm_resource_ioremap only supports contiguous memory */
+-	if (cursor.size != mem_size)
+-		return false;
++		/* ttm_resource_ioremap only supports contiguous memory */
++		if (end != cursor.start)
++			return false;
 +
-+	d->err = err;
-+	sock_hold(sk);
-+	if (!schedule_work(&d->state_change_work))
-+		sock_put(sk);
++		end = cursor.start + cursor.size;
++	}
+ 
+-	return cursor.start + cursor.size <= adev->gmc.visible_vram_size;
++	return end <= adev->gmc.visible_vram_size;
  }
  
- /* ---- Socket functions ---- */
+ /*
 
-From 73f7ff22000ba10b3498c3e14858d67698ebf2c9 Mon Sep 17 00:00:00 2001
+From 04331b38a653da25de0335488921d72016af21bb Mon Sep 17 00:00:00 2001
+From: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
+Date: Mon, 17 Oct 2022 13:15:21 -0700
+Subject: [PATCH 7/8] drm/amdgpu: Fix for BO move issue
+
+If there are no blocks to compare then exit
+the loop.
+
+Signed-off-by: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
+index 794062ab57fca4..9e6c23266a1a0f 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
+@@ -439,6 +439,9 @@ static bool amdgpu_mem_visible(struct amdgpu_device *adev,
+ 	while (cursor.remaining) {
+ 		amdgpu_res_next(&cursor, cursor.size);
+ 
++		if (!cursor.remaining)
++			break;
++
+ 		/* ttm_resource_ioremap only supports contiguous memory */
+ 		if (end != cursor.start)
+ 			return false;
+
+From ca33adbb4e745e85e165741ba624f68b7333b205 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Sat, 15 Oct 2022 15:58:54 +0200
-Subject: [PATCH 4/4] Arch Linux kernel v6.0.2-arch1
+Date: Wed, 26 Oct 2022 17:20:47 +0200
+Subject: [PATCH 8/8] Arch Linux kernel v6.0.5-arch1
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index aa449693ad09d..5f72ddf03bb0f 100644
+index 62a7398c8d06f9..4611fd643e5327 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 0
- SUBLEVEL = 2
+ SUBLEVEL = 5
 -EXTRAVERSION =
 +EXTRAVERSION = -arch1
  NAME = Hurr durr I'ma ninja sloth

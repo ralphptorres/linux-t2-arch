@@ -4,9 +4,9 @@
 #               apple-ibridge drivers, respectively.
 
 pkgbase=linux-t2
-pkgver=6.0.2
+pkgver=6.0.5
 _srcname=linux-${pkgver}
-pkgrel=3
+pkgrel=1
 pkgdesc='Linux kernel for T2 Macs'
 _srctag=v${pkgver%.*}-${pkgver##*.}
 url="https://github.com/archlinux/linux/commits/$_srctag"
@@ -256,10 +256,10 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('a13c26388cacccb684cd9f51109596a280c8186b7e95174d31ee7c5718e95c9d'
+sha256sums=('61332ef22b53c50c10faabfb965896a7d1ad4f3381f0f89643c820f28a60418e'
             'SKIP'
-            '6ed43ed093ec7dcbbac286edc204873edfa77e380ac43c8cc2f40b2965ac1aa3'
-            '55efd6c00c31e083fb827638a43d0f78b863b2ddcd7563f6a13d526435526a89'
+            '05168cbbeb6378eec6c84fe3300cede4fa5cf6130c39fb8af95040529bd390a6'
+            '12ac3f6f0ef1a0898555dc6052c4b3b3026f6fbe5ad7b5e0bb745b7c0448b4d8'
             'SKIP'
             'SKIP'
             '4482f285a66a31561452c81f232ec9c4396dc95c40a37645c7c47d7bc8b26184'
@@ -268,17 +268,17 @@ sha256sums=('a13c26388cacccb684cd9f51109596a280c8186b7e95174d31ee7c5718e95c9d'
             '5fdeefc65d6b5cca2558b93f47669749560aeba38f03cef53499d97bf3ed126c'
             '32d3915b4d50cfc654dda53e65e633d1e99b6c98795cbb7416f1ae8fe1ea2321'
             '515756555e7a6178f38c82bb1dbc2919aa9660ee8b9e158f3764948578dee92c'
-            'cfd23a06797ac86575044428a393dd7f10f06eff7648d0b78aedad82cbe41279'
+            '7dbfb183165e875969b947d6038e980c94c79de1f70b05c85e8fb0698bcb09a1'
             '8d8401a99a9dfbc41aa2dc5b6a409a19860b1b918465e19de4a4ff18de075ea3'
             '08d165106fe35b68a7b48f216566951a5db0baac19098c015bcc81c5fcba678d'
             '62f6d63815d4843ca893ca76b84a9d32590a50358ca0962017ccd75a40884ba8'
             '2827dab6eeb2d2a08034938024f902846b5813e967a0ea253dc1ea88315da383'
             '398dec7d54c6122ae2263cd5a6d52353800a1a60fd85e52427c372ea9974a625'
-            'd4ca5a01da5468a1d2957b8eb4a819e1b867a3bcd1cd47389d7c9ac9154b5430'
+            '90709677162fdeada8a86a67544abbe6a424a773ae736007d7e68ce088027078'
             'b1f19084e9a9843dd8c457c55a8ea8319428428657d5363d35df64fb865a4eae'
             '7d27bd83133c2e883e854271c5f9f698c61196afc2922921675353303194ef2c'
             '4db195e0bda5712e60a78266c1458037063e5debd646b08376c4700a27d4b4ef'
-            '9ede98eceb69e9c93e25fdb2c567466963bdd2f81c0ecb9fb9e5107f6142ff26'
+            'f1574a37df1788401699fd8015f0fd1b5699638cdfd5229e1627672043d511a5'
             'e27a4acdb9027a0652d558d619b5be3dc916d2472f3b4d01d10932fc6f35f8dc'
             'cbf0e88a3472eaf1692897dfaa94794c8267f87c283dd0f6d9df9ad39ef94c6c')
 # vim:set ts=8 sts=2 sw=2 et:
