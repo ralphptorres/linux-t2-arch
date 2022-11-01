@@ -1,4 +1,4 @@
-From 1543612638104ffc846deb5f2270a6ecdd015298 Mon Sep 17 00:00:00 2001
+From f29dd9ddc7a2659e67f7f3ddfbf087a7729fd012 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
 Date: Mon, 16 Sep 2019 04:53:20 +0200
 Subject: [PATCH 1/8] ZEN: Add sysctl and CONFIG to disallow unprivileged
@@ -14,7 +14,7 @@ Our default behavior continues to match the vanilla kernel.
  5 files changed, 53 insertions(+)
 
 diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
-index 33a4240e6a6f17..82213f9c4c17fb 100644
+index 33a4240e6a6f1..82213f9c4c17f 100644
 --- a/include/linux/user_namespace.h
 +++ b/include/linux/user_namespace.h
 @@ -139,6 +139,8 @@ static inline void set_rlimit_ucount_max(struct user_namespace *ns,
@@ -36,7 +36,7 @@ index 33a4240e6a6f17..82213f9c4c17fb 100644
  {
  	return &init_user_ns;
 diff --git a/init/Kconfig b/init/Kconfig
-index 532362fcfe31fd..f13bb9f371a2c6 100644
+index 532362fcfe31f..f13bb9f371a2c 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -1241,6 +1241,22 @@ config USER_NS
@@ -63,7 +63,7 @@ index 532362fcfe31fd..f13bb9f371a2c6 100644
  	bool "PID Namespaces"
  	default y
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 2b6bd511c6ed1c..704fe6bc9cb4df 100644
+index 2b6bd511c6ed1..704fe6bc9cb4d 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -99,6 +99,10 @@
@@ -102,7 +102,7 @@ index 2b6bd511c6ed1c..704fe6bc9cb4df 100644
  	if (err)
  		goto bad_unshare_out;
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 205d605cacc5bb..d7247ec7ddda34 100644
+index 205d605cacc5b..d7247ec7ddda3 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -81,6 +81,9 @@
@@ -132,7 +132,7 @@ index 205d605cacc5bb..d7247ec7ddda34 100644
  	{
  		.procname	= "tainted",
 diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-index 5481ba44a8d684..423ab2563ad757 100644
+index 5481ba44a8d68..423ab2563ad75 100644
 --- a/kernel/user_namespace.c
 +++ b/kernel/user_namespace.c
 @@ -21,6 +21,13 @@
@@ -150,7 +150,7 @@ index 5481ba44a8d684..423ab2563ad757 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 
-From a122e8b8bb99f204887c1ed634dff7e81f9319d4 Mon Sep 17 00:00:00 2001
+From f4a5411651f402b391dddccdebc43e3461e9f749 Mon Sep 17 00:00:00 2001
 From: Johannes Weiner <hannes@cmpxchg.org>
 Date: Tue, 2 Aug 2022 12:28:11 -0400
 Subject: [PATCH 2/8] mm: vmscan: fix extreme overreclaim and swap floods
@@ -242,7 +242,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 382dbe97329f33..266eb8cfe93a67 100644
+index 382dbe97329f3..266eb8cfe93a6 100644
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
 @@ -2955,8 +2955,8 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
@@ -285,7 +285,7 @@ index 382dbe97329f33..266eb8cfe93a67 100644
  	blk_finish_plug(&plug);
  	sc->nr_reclaimed += nr_reclaimed;
 
-From 83516bf1e37c5a1d2dbabf7b6ac85da55256e9f3 Mon Sep 17 00:00:00 2001
+From f4e799545c0fc46a5899853f60776adc8671776c Mon Sep 17 00:00:00 2001
 From: Sjoerd Simons <sjoerd@collabora.com>
 Date: Sat, 8 Oct 2022 21:57:51 +0200
 Subject: [PATCH 3/8] soundwire: intel: Initialize clock stop timeout
@@ -309,7 +309,7 @@ Signed-off-by: Sjoerd Simons <sjoerd@collabora.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/soundwire/intel.c b/drivers/soundwire/intel.c
-index af6c1a93372d90..002bc26b525e87 100644
+index af6c1a93372d9..002bc26b525e8 100644
 --- a/drivers/soundwire/intel.c
 +++ b/drivers/soundwire/intel.c
 @@ -1307,6 +1307,7 @@ static int intel_link_probe(struct auxiliary_device *auxdev,
@@ -321,7 +321,7 @@ index af6c1a93372d90..002bc26b525e87 100644
  	sdw_cdns_probe(cdns);
  
 
-From 31cf53d955bb15b8ac907ca9e6fc45e43c7bf6c7 Mon Sep 17 00:00:00 2001
+From 87336625589872206597baab173ae6014ddf1750 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
 Date: Fri, 7 Oct 2022 09:51:13 +0200
 Subject: [PATCH 4/8] drm/sched: add DRM_SCHED_FENCE_DONT_PIPELINE flag
@@ -340,7 +340,7 @@ Signed-off-by: Christian König <christian.koenig@amd.com>
  2 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/scheduler/sched_entity.c b/drivers/gpu/drm/scheduler/sched_entity.c
-index 6b25b2f4f5a308..6137537aaea4df 100644
+index 6b25b2f4f5a30..6137537aaea4d 100644
 --- a/drivers/gpu/drm/scheduler/sched_entity.c
 +++ b/drivers/gpu/drm/scheduler/sched_entity.c
 @@ -385,7 +385,8 @@ static bool drm_sched_entity_add_dependency_cb(struct drm_sched_entity *entity)
@@ -354,7 +354,7 @@ index 6b25b2f4f5a308..6137537aaea4df 100644
  		/*
  		 * Fence is from the same scheduler, only need to wait for
 diff --git a/include/drm/gpu_scheduler.h b/include/drm/gpu_scheduler.h
-index addb135eeea622..289a33e8063978 100644
+index addb135eeea62..289a33e806397 100644
 --- a/include/drm/gpu_scheduler.h
 +++ b/include/drm/gpu_scheduler.h
 @@ -32,6 +32,15 @@
@@ -374,7 +374,7 @@ index addb135eeea622..289a33e8063978 100644
  
  struct drm_gpu_scheduler;
 
-From c530bd41a8b1891760b80d1b45a04abd328df34d Mon Sep 17 00:00:00 2001
+From 2b078fa1fdcbd43a042ff49ad70f6ab2a22dffb3 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
 Date: Fri, 7 Oct 2022 10:59:58 +0200
 Subject: [PATCH 5/8] drm/amdgpu: use DRM_SCHED_FENCE_DONT_PIPELINE for VM
@@ -392,7 +392,7 @@ Signed-off-by: Christian König <christian.koenig@amd.com>
  1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c
-index 718db7d98e5a30..25ad3c7fa24bea 100644
+index 718db7d98e5a3..25ad3c7fa24be 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c
 @@ -115,8 +115,15 @@ static int amdgpu_vm_sdma_commit(struct amdgpu_vm_update_params *p,
@@ -413,7 +413,7 @@ index 718db7d98e5a30..25ad3c7fa24bea 100644
  	return 0;
  
 
-From 72ab61d408797cd72471070f6ff6f5dc94d2d938 Mon Sep 17 00:00:00 2001
+From f2712d9d94e98733953cf567f32f7755800464ae Mon Sep 17 00:00:00 2001
 From: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
 Date: Tue, 4 Oct 2022 07:33:39 -0700
 Subject: [PATCH 6/8] drm/amdgpu: Fix VRAM BO swap issue
@@ -441,7 +441,7 @@ Signed-off-by: Alex Deucher <alexander.deucher@amd.com>
  1 file changed, 12 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
-index 134575a3893c53..794062ab57fca4 100644
+index 134575a3893c5..794062ab57fca 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
 @@ -424,8 +424,9 @@ static int amdgpu_move_blit(struct ttm_buffer_object *bo,
@@ -479,7 +479,7 @@ index 134575a3893c53..794062ab57fca4 100644
  
  /*
 
-From 04331b38a653da25de0335488921d72016af21bb Mon Sep 17 00:00:00 2001
+From 75ff02c24828d71bf13730e1a0b499591a1a4cef Mon Sep 17 00:00:00 2001
 From: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
 Date: Mon, 17 Oct 2022 13:15:21 -0700
 Subject: [PATCH 7/8] drm/amdgpu: Fix for BO move issue
@@ -493,7 +493,7 @@ Signed-off-by: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
  1 file changed, 3 insertions(+)
 
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
-index 794062ab57fca4..9e6c23266a1a0f 100644
+index 794062ab57fca..9e6c23266a1a0 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
 @@ -439,6 +439,9 @@ static bool amdgpu_mem_visible(struct amdgpu_device *adev,
@@ -507,23 +507,23 @@ index 794062ab57fca4..9e6c23266a1a0f 100644
  		if (end != cursor.start)
  			return false;
 
-From ca33adbb4e745e85e165741ba624f68b7333b205 Mon Sep 17 00:00:00 2001
+From 2c2ec5ffca63bbef24e10d4eb4756e1db2fac5f6 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Wed, 26 Oct 2022 17:20:47 +0200
-Subject: [PATCH 8/8] Arch Linux kernel v6.0.5-arch1
+Date: Sat, 29 Oct 2022 15:57:35 +0200
+Subject: [PATCH 8/8] Arch Linux kernel v6.0.6-arch1
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 62a7398c8d06f9..4611fd643e5327 100644
+index e6c10009d413a..6f4ebc1c88fde 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 0
- SUBLEVEL = 5
+ SUBLEVEL = 6
 -EXTRAVERSION =
 +EXTRAVERSION = -arch1
  NAME = Hurr durr I'ma ninja sloth
