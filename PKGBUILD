@@ -34,9 +34,8 @@ source=(
   1001-Put-apple-bce-and-apple-ibridge-in-drivers-staging.patch
   1002-add-modalias-to-apple-bce.patch
 
-  # EFI and ACPI fixes
+  # ACPI fixes
   2001-fix-acpica-for-zero-arguments-acpi-calls.patch
-  2002-efi-nvram-write-fix.patch
 
   # Misc BCE patches
   2011-change-many-info-logs-to-debug.patch
@@ -265,7 +264,6 @@ sha256sums=('864b05af2d869ba73d61a9c5959e4531a141ab2bd7b217483671f625f9747faa'
             '4482f285a66a31561452c81f232ec9c4396dc95c40a37645c7c47d7bc8b26184'
             'a3a43feaffccbcd119f4a1b4e1299ef07ae36ef9bffc17767bf10e447fa02a2a'
             '45b911e592dd6c717e77ec4d8cbf844860bb7c29ace7a7170e7bf59c12e91bb4'
-            '1f50cffaf90b188d6b738355d29fa709ade2527d7cc1d530a806cf9827a28b44'
             '32d3915b4d50cfc654dda53e65e633d1e99b6c98795cbb7416f1ae8fe1ea2321'
             '515756555e7a6178f38c82bb1dbc2919aa9660ee8b9e158f3764948578dee92c'
             '7dbfb183165e875969b947d6038e980c94c79de1f70b05c85e8fb0698bcb09a1'
