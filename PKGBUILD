@@ -4,7 +4,7 @@
 #               apple-ibridge drivers, respectively.
 
 pkgbase=linux-t2
-pkgver=6.0.6
+pkgver=6.0.8
 _srcname=linux-${pkgver}
 pkgrel=1
 pkgdesc='Linux kernel for T2 Macs'
@@ -255,10 +255,10 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('864b05af2d869ba73d61a9c5959e4531a141ab2bd7b217483671f625f9747faa'
+sha256sums=('0de4f83996951c6faf9b2225db4f645882c47b1a09198190f97bd46e5f5fa257'
             'SKIP'
             '05168cbbeb6378eec6c84fe3300cede4fa5cf6130c39fb8af95040529bd390a6'
-            'ee811bf9c5790dcd35562879996e62c06d7dbd73becb7194dc311f4c890ecb25'
+            '944db444899ad51c1d31cb2b972d0fa8854d6f2e391b333935edbc61a91f8afc'
             'SKIP'
             'SKIP'
             '4482f285a66a31561452c81f232ec9c4396dc95c40a37645c7c47d7bc8b26184'

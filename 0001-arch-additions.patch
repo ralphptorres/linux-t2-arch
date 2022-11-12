@@ -1,7 +1,7 @@
-From f29dd9ddc7a2659e67f7f3ddfbf087a7729fd012 Mon Sep 17 00:00:00 2001
+From d6cebe6cf6f0f344134326a02131a281f507c437 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
 Date: Mon, 16 Sep 2019 04:53:20 +0200
-Subject: [PATCH 1/8] ZEN: Add sysctl and CONFIG to disallow unprivileged
+Subject: [PATCH 1/7] ZEN: Add sysctl and CONFIG to disallow unprivileged
  CLONE_NEWUSER
 
 Our default behavior continues to match the vanilla kernel.
@@ -14,7 +14,7 @@ Our default behavior continues to match the vanilla kernel.
  5 files changed, 53 insertions(+)
 
 diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
-index 33a4240e6a6f1..82213f9c4c17f 100644
+index 33a4240e6a6f17..82213f9c4c17fb 100644
 --- a/include/linux/user_namespace.h
 +++ b/include/linux/user_namespace.h
 @@ -139,6 +139,8 @@ static inline void set_rlimit_ucount_max(struct user_namespace *ns,
@@ -36,7 +36,7 @@ index 33a4240e6a6f1..82213f9c4c17f 100644
  {
  	return &init_user_ns;
 diff --git a/init/Kconfig b/init/Kconfig
-index 532362fcfe31f..f13bb9f371a2c 100644
+index 532362fcfe31fd..f13bb9f371a2c6 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -1241,6 +1241,22 @@ config USER_NS
@@ -63,7 +63,7 @@ index 532362fcfe31f..f13bb9f371a2c 100644
  	bool "PID Namespaces"
  	default y
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 2b6bd511c6ed1..704fe6bc9cb4d 100644
+index 2b6bd511c6ed1c..704fe6bc9cb4df 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -99,6 +99,10 @@
@@ -102,7 +102,7 @@ index 2b6bd511c6ed1..704fe6bc9cb4d 100644
  	if (err)
  		goto bad_unshare_out;
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 205d605cacc5b..d7247ec7ddda3 100644
+index 205d605cacc5bb..d7247ec7ddda34 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -81,6 +81,9 @@
@@ -132,7 +132,7 @@ index 205d605cacc5b..d7247ec7ddda3 100644
  	{
  		.procname	= "tainted",
 diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-index 5481ba44a8d68..423ab2563ad75 100644
+index 5481ba44a8d684..423ab2563ad757 100644
 --- a/kernel/user_namespace.c
 +++ b/kernel/user_namespace.c
 @@ -21,6 +21,13 @@
@@ -150,10 +150,10 @@ index 5481ba44a8d68..423ab2563ad75 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 
-From f4a5411651f402b391dddccdebc43e3461e9f749 Mon Sep 17 00:00:00 2001
+From 3289d1b987742ac1a7fdabdc91db1849844e8713 Mon Sep 17 00:00:00 2001
 From: Johannes Weiner <hannes@cmpxchg.org>
 Date: Tue, 2 Aug 2022 12:28:11 -0400
-Subject: [PATCH 2/8] mm: vmscan: fix extreme overreclaim and swap floods
+Subject: [PATCH 2/7] mm: vmscan: fix extreme overreclaim and swap floods
 
 During proactive reclaim, we sometimes observe severe overreclaim, with
 several thousand times more pages reclaimed than requested.
@@ -242,7 +242,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 382dbe97329f3..266eb8cfe93a6 100644
+index 382dbe97329f33..266eb8cfe93a67 100644
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
 @@ -2955,8 +2955,8 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
@@ -285,10 +285,10 @@ index 382dbe97329f3..266eb8cfe93a6 100644
  	blk_finish_plug(&plug);
  	sc->nr_reclaimed += nr_reclaimed;
 
-From f4e799545c0fc46a5899853f60776adc8671776c Mon Sep 17 00:00:00 2001
+From 6daf906d3fd4818ba9be0a806df94f7a4c20f263 Mon Sep 17 00:00:00 2001
 From: Sjoerd Simons <sjoerd@collabora.com>
 Date: Sat, 8 Oct 2022 21:57:51 +0200
-Subject: [PATCH 3/8] soundwire: intel: Initialize clock stop timeout
+Subject: [PATCH 3/7] soundwire: intel: Initialize clock stop timeout
 
 The bus->clk_stop_timeout member is only initialized to a non-zero value
 during the codec driver probe. This can lead to corner cases where this
@@ -304,12 +304,13 @@ bus->clk_stop_timeout is set as the maximum required by all codecs
 connected on the bus.
 
 Signed-off-by: Sjoerd Simons <sjoerd@collabora.com>
+For: https://github.com/thesofproject/linux/issues/3777
 ---
  drivers/soundwire/intel.c | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/soundwire/intel.c b/drivers/soundwire/intel.c
-index af6c1a93372d9..002bc26b525e8 100644
+index af6c1a93372d90..002bc26b525e87 100644
 --- a/drivers/soundwire/intel.c
 +++ b/drivers/soundwire/intel.c
 @@ -1307,6 +1307,7 @@ static int intel_link_probe(struct auxiliary_device *auxdev,
@@ -321,10 +322,10 @@ index af6c1a93372d9..002bc26b525e8 100644
  	sdw_cdns_probe(cdns);
  
 
-From 87336625589872206597baab173ae6014ddf1750 Mon Sep 17 00:00:00 2001
+From 3a3573ec2d5f7453819ff0c2701501e753a71907 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
 Date: Fri, 7 Oct 2022 09:51:13 +0200
-Subject: [PATCH 4/8] drm/sched: add DRM_SCHED_FENCE_DONT_PIPELINE flag
+Subject: [PATCH 4/7] drm/sched: add DRM_SCHED_FENCE_DONT_PIPELINE flag
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -340,7 +341,7 @@ Signed-off-by: Christian König <christian.koenig@amd.com>
  2 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/scheduler/sched_entity.c b/drivers/gpu/drm/scheduler/sched_entity.c
-index 6b25b2f4f5a30..6137537aaea4d 100644
+index 6b25b2f4f5a308..6137537aaea4df 100644
 --- a/drivers/gpu/drm/scheduler/sched_entity.c
 +++ b/drivers/gpu/drm/scheduler/sched_entity.c
 @@ -385,7 +385,8 @@ static bool drm_sched_entity_add_dependency_cb(struct drm_sched_entity *entity)
@@ -354,7 +355,7 @@ index 6b25b2f4f5a30..6137537aaea4d 100644
  		/*
  		 * Fence is from the same scheduler, only need to wait for
 diff --git a/include/drm/gpu_scheduler.h b/include/drm/gpu_scheduler.h
-index addb135eeea62..289a33e806397 100644
+index addb135eeea622..289a33e8063978 100644
 --- a/include/drm/gpu_scheduler.h
 +++ b/include/drm/gpu_scheduler.h
 @@ -32,6 +32,15 @@
@@ -374,10 +375,10 @@ index addb135eeea62..289a33e806397 100644
  
  struct drm_gpu_scheduler;
 
-From 2b078fa1fdcbd43a042ff49ad70f6ab2a22dffb3 Mon Sep 17 00:00:00 2001
+From 5d9fceb0e65b7ac6aa6426fc6957e999f1cc2b9f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
 Date: Fri, 7 Oct 2022 10:59:58 +0200
-Subject: [PATCH 5/8] drm/amdgpu: use DRM_SCHED_FENCE_DONT_PIPELINE for VM
+Subject: [PATCH 5/7] drm/amdgpu: use DRM_SCHED_FENCE_DONT_PIPELINE for VM
  updates
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -392,7 +393,7 @@ Signed-off-by: Christian König <christian.koenig@amd.com>
  1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c
-index 718db7d98e5a3..25ad3c7fa24be 100644
+index 718db7d98e5a30..25ad3c7fa24bea 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vm_sdma.c
 @@ -115,8 +115,15 @@ static int amdgpu_vm_sdma_commit(struct amdgpu_vm_update_params *p,
@@ -413,117 +414,57 @@ index 718db7d98e5a3..25ad3c7fa24be 100644
  	return 0;
  
 
-From f2712d9d94e98733953cf567f32f7755800464ae Mon Sep 17 00:00:00 2001
-From: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
-Date: Tue, 4 Oct 2022 07:33:39 -0700
-Subject: [PATCH 6/8] drm/amdgpu: Fix VRAM BO swap issue
+From abb7ab2ef180b3d934e779f805bacd53b6c6e76d Mon Sep 17 00:00:00 2001
+From: Ma Jun <Jun.Ma2@amd.com>
+Date: Wed, 14 Sep 2022 20:53:31 +0800
+Subject: [PATCH 6/7] drm/amdgpu: Fix the lpfn checking condition in drm buddy
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-DRM buddy manager allocates the contiguous memory requests in
-a single block or multiple blocks. So for the ttm move operation
-(incase of low vram memory) we should consider all the blocks to
-compute the total memory size which compared with the struct
-ttm_resource num_pages in order to verify that the blocks are
-contiguous for the eviction process.
+Because the value of man->size is changed during suspend/resume process,
+use mgr->mm.size instead of man->size here for lpfn checking.
 
-v2: Added a Fixes tag
-v3: Rewrite the code to save a bit of calculations and
-    variables (Christian)
-
-Fixes: c9cad937c0c5 ("drm/amdgpu: add drm buddy support to amdgpu")
-Signed-off-by: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
-Reviewed-by: Christian König <christian.koenig@amd.com>
-Signed-off-by: Alex Deucher <alexander.deucher@amd.com>
+Signed-off-by: Ma Jun <Jun.Ma2@amd.com>
+Suggested-by: Christian König <christian.koenig@amd.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20220914125331.2467162-1-Jun.Ma2@amd.com
+Signed-off-by: Christian König <christian.koenig@amd.com>
+For: https://bugs.archlinux.org/task/76198
 ---
- drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c | 17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
+ drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
-index 134575a3893c5..794062ab57fca 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
-@@ -424,8 +424,9 @@ static int amdgpu_move_blit(struct ttm_buffer_object *bo,
- static bool amdgpu_mem_visible(struct amdgpu_device *adev,
- 			       struct ttm_resource *mem)
- {
--	uint64_t mem_size = (u64)mem->num_pages << PAGE_SHIFT;
-+	u64 mem_size = (u64)mem->num_pages << PAGE_SHIFT;
- 	struct amdgpu_res_cursor cursor;
-+	u64 end;
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.c
+index 28ec5f8ac1c115..27159f1d112ec1 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.c
+@@ -435,7 +435,7 @@ static int amdgpu_vram_mgr_new(struct ttm_resource_manager *man,
+ 	if (place->flags & TTM_PL_FLAG_TOPDOWN)
+ 		vres->flags |= DRM_BUDDY_TOPDOWN_ALLOCATION;
  
- 	if (mem->mem_type == TTM_PL_SYSTEM ||
- 	    mem->mem_type == TTM_PL_TT)
-@@ -434,12 +435,18 @@ static bool amdgpu_mem_visible(struct amdgpu_device *adev,
- 		return false;
+-	if (fpfn || lpfn != man->size)
++	if (fpfn || lpfn != mgr->mm.size)
+ 		/* Allocate blocks in desired range */
+ 		vres->flags |= DRM_BUDDY_RANGE_ALLOCATION;
  
- 	amdgpu_res_first(mem, 0, mem_size, &cursor);
-+	end = cursor.start + cursor.size;
-+	while (cursor.remaining) {
-+		amdgpu_res_next(&cursor, cursor.size);
- 
--	/* ttm_resource_ioremap only supports contiguous memory */
--	if (cursor.size != mem_size)
--		return false;
-+		/* ttm_resource_ioremap only supports contiguous memory */
-+		if (end != cursor.start)
-+			return false;
-+
-+		end = cursor.start + cursor.size;
-+	}
- 
--	return cursor.start + cursor.size <= adev->gmc.visible_vram_size;
-+	return end <= adev->gmc.visible_vram_size;
- }
- 
- /*
 
-From 75ff02c24828d71bf13730e1a0b499591a1a4cef Mon Sep 17 00:00:00 2001
-From: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
-Date: Mon, 17 Oct 2022 13:15:21 -0700
-Subject: [PATCH 7/8] drm/amdgpu: Fix for BO move issue
-
-If there are no blocks to compare then exit
-the loop.
-
-Signed-off-by: Arunpravin Paneer Selvam <Arunpravin.PaneerSelvam@amd.com>
----
- drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
-index 794062ab57fca..9e6c23266a1a0 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
-@@ -439,6 +439,9 @@ static bool amdgpu_mem_visible(struct amdgpu_device *adev,
- 	while (cursor.remaining) {
- 		amdgpu_res_next(&cursor, cursor.size);
- 
-+		if (!cursor.remaining)
-+			break;
-+
- 		/* ttm_resource_ioremap only supports contiguous memory */
- 		if (end != cursor.start)
- 			return false;
-
-From 2c2ec5ffca63bbef24e10d4eb4756e1db2fac5f6 Mon Sep 17 00:00:00 2001
+From f067710656260fb5df80d002a5980f6e691b655c Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
-Date: Sat, 29 Oct 2022 15:57:35 +0200
-Subject: [PATCH 8/8] Arch Linux kernel v6.0.6-arch1
+Date: Thu, 10 Nov 2022 22:12:11 +0100
+Subject: [PATCH 7/7] Arch Linux kernel v6.0.8-arch1
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index e6c10009d413a..6f4ebc1c88fde 100644
+index bcb76d4fdbc112..befeefbbfcc3c0 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 0
- SUBLEVEL = 6
+ SUBLEVEL = 8
 -EXTRAVERSION =
 +EXTRAVERSION = -arch1
  NAME = Hurr durr I'ma ninja sloth
