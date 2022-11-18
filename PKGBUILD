@@ -3,10 +3,11 @@
 #               Additionally, MrARM and Ronald Tschalär wrote apple-bce and
 #               apple-ibridge drivers, respectively.
 
+UPSTREAM_HASH=e60276b8c11ab4a8be23807bc67b048cfb937dfa
 pkgbase=linux-t2
 pkgver=6.0.8
 _srcname=linux-${pkgver}
-pkgrel=1
+pkgrel=3
 pkgdesc='Linux kernel for T2 Macs'
 _srctag=v${pkgver%.*}-${pkgver##*.}
 url="https://github.com/archlinux/linux/commits/$_srctag"
@@ -24,49 +25,12 @@ source=(
   https://www.kernel.org/pub/linux/kernel/v${pkgver//.*}.x/linux-${pkgver}.tar.sign
   config         # the main kernel config file
 
-  # Arch Linux patches
-  0001-arch-additions.patch
+  # Archlinux Patches
+  https://github.com/archlinux/linux/compare/$UPSTREAM_HASH...archlinux:v$pkgver-arch1.patch
 
-  # apple-bce, apple-ibridge
-  apple-bce::git+https://github.com/t2linux/apple-bce-drv#commit=6988ec2f08ed7092211540ae977f4ddb56d4fd49
-  apple-ibridge::git+https://github.com/Redecorating/apple-ib-drv#commit=467df9b11cb55456f0365f40dd11c9e666623bf3
+  # t2linux Patches
+  patches::git+https://github.com/t2linux/linux-t2-patches#commit=08820b8a2858d721120082230f6eef8e9c41456e
 
-  1001-Put-apple-bce-and-apple-ibridge-in-drivers-staging.patch
-  1002-add-modalias-to-apple-bce.patch
-
-  # ACPI fixes
-  2001-fix-acpica-for-zero-arguments-acpi-calls.patch
-
-  # Misc BCE patches
-  2011-change-many-info-logs-to-debug.patch
-  2013-aaudio-set-the-card-driver-name-to-AppleT2x-channel-.patch
-
-  # Apple SMC ACPI support
-  3001-applesmc-convert-static-structures-to-drvdata.patch
-  3002-applesmc-make-io-port-base-addr-dynamic.patch
-  3003-applesmc-switch-to-acpi_device-from-platform.patch
-  3004-applesmc-key-interface-wrappers.patch
-  3005-applesmc-basic-mmio-interface-implementation.patch
-  3006-applesmc-fan-support-on-T2-Macs.patch
-  3007-applesmc-Add-iMacPro-to-applesmc_whitelist.patch
-
-  # T2 USB Touchpad support
-  4001-Input-bcm5974-Add-support-for-the-T2-Macs.patch
-
-  # Keyboard Layout fixes
-  5001-HID-apple-fix-key-translations-where-multiple-quirks.patch
-  5002-HID-apple-enable-APPLE_ISO_TILDE_QUIRK-for-the-keybo.patch
-
-  # Hack for i915 overscan issues
-  7001-drm-i915-fbdev-Discard-BIOS-framebuffers-exceeding-h.patch
-
-  # Broadcom WIFI device support
-  # https://github.com/AsahiLinux/linux/commits/bits/080-wifi
-  8001-asahilinux-wifi-patchset.patch
-
-  # Broadcom BCM4377 BT device support
-  # https://github.com/AsahiLinux/linux/commits/bluetooth-wip
-  8002-asahilinux-hci_bcm4377-patchset.patch
 )
 validpgpkeys=(
   'ABAF11C65A2970B130ABE3C479BE3E4300411886'  # Linus Torvalds
@@ -85,15 +49,10 @@ prepare() {
   echo "-$pkgrel" > localversion.10-pkgrel
   echo "${pkgbase#linux}" > localversion.20-pkgname
 
-  for i in apple-bce apple-ibridge; do
-    echo "Copying $i in to drivers/staging..."
-	# no need to copy .git/
-	mkdir drivers/staging/$i
-    cp -r $srcdir/$i/* drivers/staging/$i/
-  done
-
+  t2linux_patches=$(ls $srcdir/patches | grep -e \.patch$)
+  mv $srcdir/patches/*.patch $srcdir/
   local src
-  for src in "${source[@]}"; do
+  for src in "${source[@]}" $t2linux_patches; do
     src="${src%%::*}"
     src="${src##*/}"
     [[ $src = *.patch ]] || continue
@@ -103,8 +62,8 @@ prepare() {
 
   echo "Setting config..."
   cp ../config .config
+  cat $srcdir/patches/extra_config >> .config
   make olddefconfig
-  ./scripts/config --module BT_HCIBCM4377
   diff -u ../config .config || :
 
   make -s kernelrelease > version
@@ -259,24 +218,5 @@ sha256sums=('0de4f83996951c6faf9b2225db4f645882c47b1a09198190f97bd46e5f5fa257'
             'SKIP'
             '05168cbbeb6378eec6c84fe3300cede4fa5cf6130c39fb8af95040529bd390a6'
             '944db444899ad51c1d31cb2b972d0fa8854d6f2e391b333935edbc61a91f8afc'
-            'SKIP'
-            'SKIP'
-            '4482f285a66a31561452c81f232ec9c4396dc95c40a37645c7c47d7bc8b26184'
-            'a3a43feaffccbcd119f4a1b4e1299ef07ae36ef9bffc17767bf10e447fa02a2a'
-            '45b911e592dd6c717e77ec4d8cbf844860bb7c29ace7a7170e7bf59c12e91bb4'
-            '32d3915b4d50cfc654dda53e65e633d1e99b6c98795cbb7416f1ae8fe1ea2321'
-            '515756555e7a6178f38c82bb1dbc2919aa9660ee8b9e158f3764948578dee92c'
-            '7dbfb183165e875969b947d6038e980c94c79de1f70b05c85e8fb0698bcb09a1'
-            '8d8401a99a9dfbc41aa2dc5b6a409a19860b1b918465e19de4a4ff18de075ea3'
-            '08d165106fe35b68a7b48f216566951a5db0baac19098c015bcc81c5fcba678d'
-            '62f6d63815d4843ca893ca76b84a9d32590a50358ca0962017ccd75a40884ba8'
-            '2827dab6eeb2d2a08034938024f902846b5813e967a0ea253dc1ea88315da383'
-            '398dec7d54c6122ae2263cd5a6d52353800a1a60fd85e52427c372ea9974a625'
-            '90709677162fdeada8a86a67544abbe6a424a773ae736007d7e68ce088027078'
-            'b1f19084e9a9843dd8c457c55a8ea8319428428657d5363d35df64fb865a4eae'
-            '7d27bd83133c2e883e854271c5f9f698c61196afc2922921675353303194ef2c'
-            '4db195e0bda5712e60a78266c1458037063e5debd646b08376c4700a27d4b4ef'
-            'f1574a37df1788401699fd8015f0fd1b5699638cdfd5229e1627672043d511a5'
-            'e27a4acdb9027a0652d558d619b5be3dc916d2472f3b4d01d10932fc6f35f8dc'
-            'cbf0e88a3472eaf1692897dfaa94794c8267f87c283dd0f6d9df9ad39ef94c6c')
+            'SKIP')
 # vim:set ts=8 sts=2 sw=2 et:
