@@ -3,6 +3,5 @@
 *.pkg.tar.*
 src/
 pkg/
-apple-bce/
-apple-ibridge/
+patches/
 PKGBUILD.orig

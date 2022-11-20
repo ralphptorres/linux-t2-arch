@@ -3,11 +3,11 @@
 #               Additionally, MrARM and Ronald Tschalär wrote apple-bce and
 #               apple-ibridge drivers, respectively.
 
-UPSTREAM_HASH=e60276b8c11ab4a8be23807bc67b048cfb937dfa
+UPSTREAM_HASH=be8b93b5cc7d533eb8c9b0590cdac055ecafe13a
 pkgbase=linux-t2
-pkgver=6.0.8
+pkgver=6.0.9
 _srcname=linux-${pkgver}
-pkgrel=3
+pkgrel=1
 pkgdesc='Linux kernel for T2 Macs'
 _srctag=v${pkgver%.*}-${pkgver##*.}
 url="https://github.com/archlinux/linux/commits/$_srctag"
@@ -166,7 +166,7 @@ _package-headers() {
   echo "Stripping build tools..."
   local file
   while read -rd '' file; do
-    case "$(file -bi "$file")" in
+    case "$(file -Sib "$file")" in
       application/x-sharedlib\;*)      # Libraries (.so)
         strip -v $STRIP_SHARED "$file" ;;
       application/x-archive\;*)        # Libraries (.a)
@@ -214,9 +214,9 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('0de4f83996951c6faf9b2225db4f645882c47b1a09198190f97bd46e5f5fa257'
+sha256sums=('6114a208e82739b4a1ab059ace35262be2a83be34cd1ae23cb8a09337db831c7'
             'SKIP'
             '05168cbbeb6378eec6c84fe3300cede4fa5cf6130c39fb8af95040529bd390a6'
-            '944db444899ad51c1d31cb2b972d0fa8854d6f2e391b333935edbc61a91f8afc'
+            'd6d5ba2c6ddb7e21c086ddb6c8200be707a4f02274a89fe85e041d2c4367d74c'
             'SKIP')
 # vim:set ts=8 sts=2 sw=2 et:
