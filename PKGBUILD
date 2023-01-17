@@ -3,9 +3,9 @@
 #               Additionally, MrARM and Ronald Tschalär wrote apple-bce and
 #               apple-ibridge drivers, respectively.
 
-UPSTREAM_HASH=ebdb69c5b054f115ef5ff72f0bb2aaa1718904e6
+T2_PATCH_HASH=1195754e6fd0ee3dd6b1f6e05a034db1af53551d
 pkgbase=linux-t2
-pkgver=6.1.1
+pkgver=6.1.6
 _srcname=linux-${pkgver}
 pkgrel=1
 pkgdesc='Linux kernel for T2 Macs'
@@ -19,22 +19,19 @@ makedepends=(
   git
 )
 options=('!strip')
-
+_srcname=linux-${pkgver}-arch1
 source=(
-  https://www.kernel.org/pub/linux/kernel/v${pkgver//.*}.x/linux-${pkgver}.tar.xz
-  https://www.kernel.org/pub/linux/kernel/v${pkgver//.*}.x/linux-${pkgver}.tar.sign
+  https://github.com/archlinux/linux/archive/refs/tags/v${pkgver}-arch1.tar.gz
   config         # the main kernel config file
 
-  # Archlinux Patches
-  https://github.com/archlinux/linux/compare/$UPSTREAM_HASH...archlinux:v$pkgver-arch1.patch
-
   # t2linux Patches
-  patches::git+https://github.com/t2linux/linux-t2-patches#commit=5c2a3930cbc83bab1381239cc49c1047db94e753
-
+  patches::git+https://github.com/t2linux/linux-t2-patches#commit=${T2_PATCH_HASH}
 )
 validpgpkeys=(
   'ABAF11C65A2970B130ABE3C479BE3E4300411886'  # Linus Torvalds
   '647F28654894E3BD457199BE38DBBDC86092693E'  # Greg Kroah-Hartman
+  'A2FF3A36AAA56654109064AB19802F8B0D70FC30'  # Jan Alexander Steffens (heftig)
+  'C7E7849466FE2358343588377258734B41C31549'  # David Runge <dvzrv@archlinux.org>
 )
 
 export KBUILD_BUILD_HOST=archlinux
@@ -214,9 +211,7 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('a3e61377cf4435a9e2966b409a37a1056f6aaa59e561add9125a88e3c0971dfb'
-            'SKIP'
-            '0571ea17a2e38458096b679418197bbea8c414388f628d122517f3a1f3a31b3a'
-            'fc55aa3693966da4f87c4bf9350e6062f03dbe6c6c87ec100657476ce9aba51f'
+sha256sums=('111eb77a6571dd2bc271d298df6660e22a0d297250f6b99e42fe3f34edeea011'
+            '1efa33aea067fa920880ef7fef3ec82f8d4cde21213eda34ac6534ca6879fca0'
             'SKIP')
 # vim:set ts=8 sts=2 sw=2 et:

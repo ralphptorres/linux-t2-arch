@@ -1,6 +1,4 @@
-*.tar.sign
-*.tar.xz
-*.pkg.tar.*
+*.tar.*
 src/
 pkg/
 patches/
