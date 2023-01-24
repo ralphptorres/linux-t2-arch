@@ -1,8 +1,6 @@
 name: Cron job to update kernel
 
 on:
-  push:
-  
   schedule:
     - cron: '0 */8 * * *'
   workflow_dispatch:
@@ -42,7 +40,7 @@ jobs:
             echo "publish=no" >> $GITHUB_ENV
           fi
       - name: Create PR
-        if: ${{env.publish}} == 'yes'
+        if: ${{env.publish == 'yes'}}
         uses: peter-evans/create-pull-request@v4
         with:
           commit-message: ${{ env.pkgbase }} v${{ env.pkgver }}-${{ env.pkgrel }}
@@ -50,7 +48,7 @@ jobs:
           delete-branch: true
           title: v${{env.pkgver}}-${{env.pkgrel}} Automatic update
       - name: Build
-        if: ${{env.publish}} == 'yes'
+        if: ${{env.publish == 'yes'}}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
