@@ -17,7 +17,7 @@ makedepends=(
   xmlto python-sphinx python-sphinx_rtd_theme graphviz imagemagick texlive-latexextra
   git
 )
-confilcts=('apple-gmux-t2-dkms-git')
+conflicts=('apple-gmux-t2-dkms-git')
 replaces=('apple-gmux-t2-dkms-git')
 options=('!strip')
 _srcname="linux-${pkgver}-arch1"
