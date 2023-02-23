@@ -3,11 +3,10 @@
 #               Additionally, MrARM and Ronald Tschalär wrote apple-bce and
 #               apple-ibridge drivers, respectively.
 
-T2_PATCH_HASH=2ab56a3ea81602e9b73cc31daa656d6ac728f021
-pkgbase=linux-t2
+pkgbase="linux-t2"
 pkgver=6.1.12
 _srcname=linux-${pkgver}
-pkgrel=2
+pkgrel=3
 pkgdesc='Linux kernel for T2 Macs'
 _srctag=v${pkgver%.*}-${pkgver##*.}
 url="https://github.com/archlinux/linux/commits/$_srctag"
@@ -18,8 +17,11 @@ makedepends=(
   xmlto python-sphinx python-sphinx_rtd_theme graphviz imagemagick texlive-latexextra
   git
 )
+confilcts=('apple-gmux-t2-dkms-git')
+replaces=('apple-gmux-t2-dkms-git')
 options=('!strip')
-_srcname=linux-${pkgver}-arch1
+_srcname="linux-${pkgver}-arch1"
+T2_PATCH_HASH=2ab56a3ea81602e9b73cc31daa656d6ac728f021
 source=(
   https://github.com/archlinux/linux/archive/refs/tags/v${pkgver}-arch1.tar.gz
   config         # the main kernel config file
