@@ -11,7 +11,7 @@ jobs:
       run: |
         BUILDUSER=yuukoito
         BUILDGROUP=yagakimi
-        HOSTNAME=bloom-into-your
+        HOSTNAME=bloom-into-you
         cat << EOF > entrypoint.sh
         cd /build
         groupadd -r $BUILDGROUP
