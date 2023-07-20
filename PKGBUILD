@@ -1,10 +1,11 @@
-# Maintainer: Redecorating
+# Maintainer: Noa Himesaka
+# Previous Maintainer: Redecorating
 # Contributors: There are many, see `grep -h "From:" *.patch|sort|uniq -c`.
 #               Additionally, MrARM and Ronald Tschalär wrote apple-bce and
 #               apple-ibridge drivers, respectively.
 
 pkgbase="linux-t2"
-pkgver=6.4.3
+pkgver=6.4.4
 _srcname=linux-${pkgver}
 pkgrel=1
 pkgdesc='Linux kernel for T2 Macs'
@@ -40,7 +41,7 @@ source=(
   config  # the main kernel config file
 
   # t2linux Patches
-  patches::git+https://github.com/t2linux/linux-t2-patches#commit=${T2_PATCH_HASH}
+  patches::git+https://github.com/t2linux/linux-t2-patches
 )
 validpgpkeys=(
   ABAF11C65A2970B130ABE3C479BE3E4300411886  # Linus Torvalds
@@ -49,8 +50,6 @@ validpgpkeys=(
   C7E7849466FE2358343588377258734B41C31549  # David Runge <dvzrv@archlinux.org>
 )
 
-export KBUILD_BUILD_HOST=archlinux
-export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
 _make() {
@@ -62,8 +61,9 @@ prepare() {
   cd $_srcname
 
   echo "Setting version..."
-  echo "-$pkgrel" > localversion.10-pkgrel
-  echo "${pkgbase#linux}" > localversion.20-pkgname
+  echo "-Yagakimi-T2" > localversion.10-codename
+  echo "-$pkgrel" > localversion.20-pkgrel
+  echo "${pkgbase#linux}" > localversion.30-pkgname
   make defconfig
   make -s kernelrelease > version
   make mrproper
@@ -249,7 +249,7 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('a11f167a14bb31c407aef84c016a23fc1ed7ed3ff75d701b294940135e038874'
+sha256sums=('7c16609318b23497977dbe4816618d4c5556a99f14f3b1a404713a163483358f'
             '6b337a9d3cfdc00005589a80b8d36fa500f6a92ed21565a3aceec48d7202a7da'
             'SKIP')
 # vim:set ts=8 sts=2 sw=2 et:
