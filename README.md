@@ -1,8 +1,8 @@
 linux-t2 - Under New Management!
 ========
 
-Arch Linux package for Linux kernel with bleeding edge T2 Mac support.[br]
-Now under new management!
+Arch Linux package for Linux kernel with bleeding edge T2 Mac support.
+Now under new management, with 100% more manga and weebness!
 
 To build yourself:
 
