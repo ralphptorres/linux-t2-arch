@@ -62,7 +62,7 @@ prepare() {
   cd $_srcname
 
   echo "Setting version..."
-  echo "-Yagakimi-T2" > localversion.10-codename
+  echo "-Ototsuku-T2" > localversion.10-codename
   echo "-$pkgrel" > localversion.20-pkgrel
   echo "${pkgbase#linux}" > localversion.30-pkgname
   make defconfig
