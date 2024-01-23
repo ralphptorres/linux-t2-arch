@@ -5,7 +5,7 @@
 #               apple-ibridge drivers, respectively.
 
 pkgbase="linux-t2"
-pkgver=6.6.9
+pkgver=6.7.1
 _srcname=linux-${pkgver}
 pkgrel=1
 archrel=1
@@ -62,7 +62,7 @@ prepare() {
   cd $_srcname
 
   echo "Setting version..."
-  echo "-YuruYuri-T2" > localversion.10-codename
+  echo "-Adashima-T2" > localversion.10-codename
   echo "-$pkgrel" > localversion.20-pkgrel
   echo "${pkgbase#linux}" > localversion.30-pkgname
   make defconfig
@@ -250,7 +250,7 @@ for _p in "${pkgname[@]}"; do
   }"
 done
 
-sha256sums=('7f032849aa2afa4cb04906df0b42c1a6604df9bde787b6c260b24e70438fabf5'
+sha256sums=('05bb6e5a81389792ae18b07271a44578051333da8dfb91508185591f80816a08'
             '6b337a9d3cfdc00005589a80b8d36fa500f6a92ed21565a3aceec48d7202a7da'
             'SKIP')
 # vim:set ts=8 sts=2 sw=2 et:
