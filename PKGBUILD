@@ -72,7 +72,8 @@ prepare() {
   # revert commit that makes camera unstable
   # (apple-bce: fix VHCI crash)
   cd $srcdir/patches
-  git config --global user.name "Ralph Torres" user.email "mail@ralphptorr.es"
+  git config --global user.name "Ralph Torres"
+  git config --global user.email "mail@ralphptorr.es"
   git revert b8ce142809f370aae655968b10634d069244a7f2
   cd $_srcname
 
