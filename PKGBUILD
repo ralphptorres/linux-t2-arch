@@ -69,6 +69,12 @@ prepare() {
   make -s kernelrelease > version
   make mrproper
 
+  # revert commit that makes camera unstable
+  # (apple-bce: fix VHCI crash)
+  cd $srcdir/patches
+  git revert b8ce142809f370aae655968b10634d069244a7f2
+  cd $_srcname
+
   t2linux_patches=$(ls $srcdir/patches | grep -e \.patch$)
   mv $srcdir/patches/*.patch $srcdir/
   local src
